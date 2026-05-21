@@ -61,7 +61,7 @@ Follow this guide to deploy both the frontend and backend on Render.
 
 1. Update your API base URL in `src/lib/api.js`:
 ```javascript
-const API_BASE_URL = process.env.VITE_API_URL || 'https://workhub-backend.onrender.com/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://workhub-backend.onrender.com/api';
 ```
 
 2. Create a `.env.production` file:
@@ -134,5 +134,4 @@ export const fetchData = async (endpoint) => {
 - Configure automatic deploys on git push
 - Set up health checks
 - Configure auto-restart on crashes
-
 
