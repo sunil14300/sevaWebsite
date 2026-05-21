@@ -10,6 +10,17 @@ export default defineConfig(({ mode }) => ({
       overlay: false,
     },
   },
+  preview: {
+    host: "0.0.0.0",
+    port: 5000,
+    allowedHosts: [
+      "localhost",
+      "127.0.0.1",
+      "sevawebsite-2.onrender.com",
+      "sevawebsite1.onrender.com",
+      "*.onrender.com"
+    ]
+  },
   plugins: [react()],
   resolve: {
     alias: {
