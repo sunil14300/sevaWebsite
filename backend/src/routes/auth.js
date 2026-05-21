@@ -22,6 +22,7 @@ router.post(
     body("password").isLength({ min: 6 }),
     // Worker-only validations
     body("occupation").if(body("role").equals("worker")).trim().notEmpty(),
+    body("occupationOther").if(body("occupation").equals("Others")).trim().notEmpty().isLength({ min: 2, max: 100 }),
     body("aadhaar").if(body("role").equals("worker")).trim().notEmpty().isLength({ min: 12, max: 12 }),
     body("pan").optional({ checkFalsy: true }).isLength({ min: 10, max: 10 }),
     body("priceCharge").if(body("role").equals("worker")).trim().notEmpty(),
@@ -51,14 +52,18 @@ router.post(
       if (isCustomer) {
         user = await Customer.create({ ...commonData, role: "customer" });
       } else {
-        user = await Worker.create({
+        const workerData = {
           ...commonData,
           role: "worker",
           occupation: req.body.occupation,
           aadhaar: req.body.aadhaar,
           pan: req.body.pan,
           priceCharge: req.body.priceCharge,
-        });
+        };
+        if (req.body.occupation === "Others" && req.body.occupationOther) {
+          workerData.occupationOther = req.body.occupationOther;
+        }
+        user = await Worker.create(workerData);
       }
 
       // Notify all admins about the new registration
@@ -82,10 +87,19 @@ router.post(
         { expiresIn: "7d" }
       );
 
+      const responseUser = {
+        registrationId: user.registrationId,
+        name: user.name,
+        role: user.role,
+        occupation: user.occupation,
+      };
+      if (user.occupationOther) {
+        responseUser.occupationOther = user.occupationOther;
+      }
       res.status(201).json({
         registrationId: user.registrationId,
         token,
-        user: { registrationId: user.registrationId, name: user.name, role: user.role, occupation: user.occupation },
+        user: responseUser,
       });
     } catch (error) {
       if (error.code === 11000) return res.status(409).json({ error: "Duplicate entry." });

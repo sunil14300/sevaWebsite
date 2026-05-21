@@ -20,7 +20,14 @@ router.post(
     body("customerMobile").trim().notEmpty().isLength({ min: 10, max: 15 }),
     body("customerAddress").trim().notEmpty().isLength({ max: 300 }),
     body("serviceDate").isISO8601(),
-    body("agreedPrice").isNumeric(),
+    body("agreedPrice").custom((value) => {
+      const price = parseFloat(value);
+      if (isNaN(price) || price <= 0) {
+        throw new Error("Agreed price must be a positive number");
+      }
+      return true;
+    }),
+    body("description").optional({ checkFalsy: true }).trim(),
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -77,7 +84,7 @@ router.get("/my", auth, async (req, res) => {
 router.get("/customer", auth, async (req, res) => {
   try {
     const bookings = await Booking.find({ customerId: req.worker.id })
-      .populate("workerId", "name registrationId occupation priceCharge profilePhoto")
+      .populate("workerId", "name registrationId occupation occupationOther priceCharge profilePhoto")
       .sort({ createdAt: -1 });
     res.json(bookings);
   } catch {

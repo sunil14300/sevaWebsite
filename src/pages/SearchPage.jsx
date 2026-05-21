@@ -67,7 +67,9 @@ const SearchPage = () => {
                   <div>
                     <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">Book Worker</p>
                     <h3 className="font-mono text-lg font-bold">{bookingWorker.name}</h3>
-                    <p className="font-mono text-xs text-muted-foreground">{bookingWorker.occupation} · {bookingWorker.priceCharge}</p>
+                    <p className="font-mono text-xs text-muted-foreground">
+                      {bookingWorker.occupation === "Others" ? bookingWorker.occupationOther : bookingWorker.occupation} · {bookingWorker.priceCharge}
+                    </p>
                   </div>
                 </div>
               <button onClick={() => setBookingWorker(null)} className="font-mono text-xs text-destructive">✕</button>

@@ -6,14 +6,14 @@ import { toast } from "sonner";
 
 const OCCUPATIONS = [
   "Plumber", "Electrician", "Painter", "Mechanic", "Cook", "Carpenter",
-  "Barber", "Sweeper", "Mason", "Driver", "Helper", "Cobbler", "Technical Person", "Labour",
+  "Barber", "Sweeper", "Mason", "Driver", "Helper", "Cobbler", "Technical Person", "Labour", "Others",
 ];
 
 const RegisterPage = () => {
   const [role, setRole] = useState("customer");
   const [formData, setFormData] = useState({
     name: "", address: "", dob: "", mobile: "", email: "",
-    state: "", occupation: "", aadhaar: "", pan: "", priceCharge: "", password: "",
+    state: "", occupation: "", occupationOther: "", aadhaar: "", pan: "", priceCharge: "", password: "",
   });
   const [submitted, setSubmitted] = useState(false);
   const [regId, setRegId] = useState("");
@@ -32,9 +32,12 @@ const RegisterPage = () => {
       const payload = { ...formData, role };
       if (role === "customer") {
         delete payload.occupation;
+        delete payload.occupationOther;
         delete payload.aadhaar;
         delete payload.pan;
         delete payload.priceCharge;
+      } else if (formData.occupation !== "Others") {
+        delete payload.occupationOther;
       }
       const data = await api.register(payload);
       setRegId(data.registrationId);
@@ -107,7 +110,7 @@ const RegisterPage = () => {
                   : "bg-card text-muted-foreground hover:text-foreground"
               }`}
             >
-              🏠 I want to Hire
+              🏠 Customer
             </button>
             <button
               type="button"
@@ -118,7 +121,7 @@ const RegisterPage = () => {
                   : "bg-card text-muted-foreground hover:text-foreground"
               }`}
             >
-              🔧 I want to Work
+              🔧 Worker
             </button>
           </div>
 
@@ -140,23 +143,41 @@ const RegisterPage = () => {
             ))}
 
             {role === "worker" && (
-              <div>
-                <label className="block font-mono text-xs uppercase tracking-widest text-muted-foreground mb-1">
-                  Occupation <span className="text-primary">*</span>
-                </label>
-                <select
-                  name="occupation"
-                  required
-                  value={formData.occupation}
-                  onChange={handleChange}
-                  className="w-full h-11 px-4 bg-card border border-border font-body text-sm focus:outline-none focus:border-primary transition-colors"
-                >
-                  <option value="">Select occupation</option>
-                  {OCCUPATIONS.map((o) => (
-                    <option key={o} value={o}>{o}</option>
-                  ))}
-                </select>
-              </div>
+              <>
+                <div>
+                  <label className="block font-mono text-xs uppercase tracking-widest text-muted-foreground mb-1">
+                    Occupation <span className="text-primary">*</span>
+                  </label>
+                  <select
+                    name="occupation"
+                    required
+                    value={formData.occupation}
+                    onChange={handleChange}
+                    className="w-full h-11 px-4 bg-card border border-border font-body text-sm focus:outline-none focus:border-primary transition-colors"
+                  >
+                    <option value="">Select occupation</option>
+                    {OCCUPATIONS.map((o) => (
+                      <option key={o} value={o}>{o}</option>
+                    ))}
+                  </select>
+                </div>
+                {formData.occupation === "Others" && (
+                  <div>
+                    <label className="block font-mono text-xs uppercase tracking-widest text-muted-foreground mb-1">
+                      Please specify your occupation <span className="text-primary">*</span>
+                    </label>
+                    <input
+                      name="occupationOther"
+                      type="text"
+                      required
+                      placeholder="Enter your occupation"
+                      value={formData.occupationOther}
+                      onChange={handleChange}
+                      className="w-full h-11 px-4 bg-card border border-border font-body text-sm focus:outline-none focus:border-primary transition-colors"
+                    />
+                  </div>
+                )}
+              </>
             )}
 
             <div>

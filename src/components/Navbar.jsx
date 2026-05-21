@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Briefcase } from "lucide-react";
 import NotificationBell from "@/components/NotificationBell";
 
 const Navbar = () => {

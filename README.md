@@ -1,73 +1,138 @@
-# Welcome to your Lovable project
+# WorkHub - Deployment Guide
 
-## Project info
+## Hosting on Render
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+Follow this guide to deploy both the frontend and backend on Render.
 
-## How can I edit this code?
+### Prerequisites
+- GitHub account with your project repository
+- Render account (https://render.com)
+- Backend should be in the `backend/` folder
+- Frontend in the root folder
 
-There are several ways of editing your application.
+---
 
-**Use Lovable**
+## Backend Deployment (Node.js/Express)
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+### Step 1: Prepare Backend for Deployment
 
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+1. Navigate to `backend/` folder
+2. Ensure your `backend/package.json` has a start script:
+```json
+{
+  "scripts": {
+    "start": "node src/server.js"
+  }
+}
 ```
 
-**Edit a file directly in GitHub**
+3. Create a `.env` file or document required environment variables:
+   - DATABASE_URL (if using database)
+   - JWT_SECRET
+   - Any API keys needed
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Step 2: Deploy Backend on Render
 
-**Use GitHub Codespaces**
+1. Go to https://render.com and sign in
+2. Click **"New +"** → **"Web Service"**
+3. Connect your GitHub repository
+4. Fill in the details:
+   - **Name**: `workhub-backend`
+   - **Environment**: `Node`
+   - **Region**: Choose closest to your users
+   - **Branch**: `main`
+   - **Build Command**: `cd backend && npm install`
+   - **Start Command**: `cd backend && npm start`
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+5. Under **Environment**, add your environment variables:
+   - `DATABASE_URL`: your database connection string
+   - `JWT_SECRET`: your secret key
+   - `NODE_ENV`: `production`
 
-## What technologies are used for this project?
+6. Click **"Create Web Service"** and wait for deployment
 
-This project is built with:
+7. Once live, copy the backend URL (e.g., `https://workhub-backend.onrender.com`)
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+---
 
-## How can I deploy this project?
+## Frontend Deployment (React/Vite)
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+### Step 1: Prepare Frontend
 
-## Can I connect a custom domain to my Lovable project?
+1. Update your API base URL in `src/lib/api.js`:
+```javascript
+const API_BASE_URL = process.env.VITE_API_URL || 'https://workhub-backend.onrender.com/api';
+```
 
-Yes, you can!
+2. Create a `.env.production` file:
+```
+VITE_API_URL=https://workhub-backend.onrender.com/api
+```
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+### Step 2: Create render.yaml (Optional but Recommended)
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Create a `render.yaml` file in root for easier multi-service deployment:
+```yaml
+services:
+  - type: web
+    name: workhub-frontend
+    env: static
+    buildCommand: npm run build
+    staticPublicPath: dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://workhub-backend.onrender.com/api
+```
+
+### Step 3: Deploy Frontend on Render
+
+1. Go to https://render.com
+2. Click **"New +"** → **"Static Site"**
+3. Connect your GitHub repository
+4. Fill in the details:
+   - **Name**: `workhub-frontend`
+   - **Branch**: `main`
+   - **Build Command**: `npm install && npm run build`
+   - **Publish Directory**: `dist`
+
+5. Under **Environment**, add:
+   - `VITE_API_URL`: `https://workhub-backend.onrender.com/api`
+
+6. Click **"Create Static Site"** and wait for deployment
+
+7. Your frontend will be live at: `https://workhub-frontend.onrender.com`
+
+---
+
+## Connecting Frontend to Backend
+
+Make sure your API calls in the frontend use the backend URL:
+
+```javascript
+// src/lib/api.js
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+
+export const fetchData = async (endpoint) => {
+  const response = await fetch(`${API_URL}${endpoint}`);
+  return response.json();
+};
+```
+
+---
+
+## Monitoring & Logs
+
+- View logs on Render dashboard for each service
+- Check backend logs if API calls fail
+- Monitor frontend performance in browser DevTools
+
+---
+
+## Next Steps
+
+- Set up a custom domain
+- Configure automatic deploys on git push
+- Set up health checks
+- Configure auto-restart on crashes
+
+

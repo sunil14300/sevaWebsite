@@ -8,7 +8,7 @@ import "leaflet/dist/leaflet.css";
 const OCCUPATIONS = [
   "", "Plumber", "Electrician", "Painter", "Mechanic", "Cook",
   "Carpenter", "Barber", "Sweeper", "Mason", "Driver",
-  "Helper", "Cobbler", "Technical Person", "Labour",
+  "Helper", "Cobbler", "Technical Person", "Labour", "Others",
 ];
 
 const NearbyWorkersPage = () => {
@@ -136,7 +136,7 @@ const NearbyWorkersPage = () => {
           .bindPopup(`
             <div style="font-family:monospace;font-size:12px">
               <b>${w.name}</b><br/>
-              ${w.occupation} · ${w.priceCharge}<br/>
+              ${w.occupation === "Others" ? w.occupationOther : w.occupation} · ${w.priceCharge}<br/>
               ⭐ ${w.rating || 0}/5 · ${w.available ? "Available" : "Booked"}
             </div>
           `);
@@ -185,7 +185,7 @@ const NearbyWorkersPage = () => {
               <div>
                 <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">Book Worker</p>
                 <h3 className="font-mono text-lg font-bold">{bookingWorker.name}</h3>
-                <p className="font-mono text-xs text-muted-foreground">{bookingWorker.occupation} · {bookingWorker.priceCharge}</p>
+                <p className="font-mono text-xs text-muted-foreground">{bookingWorker.occupation === "Others" ? bookingWorker.occupationOther : bookingWorker.occupation} · {bookingWorker.priceCharge}</p>
               </div>
               <button onClick={() => setBookingWorker(null)} className="font-mono text-xs text-destructive">✕</button>
             </div>
@@ -325,7 +325,7 @@ const NearbyWorkersPage = () => {
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="font-mono text-sm font-bold truncate">{w.name}</h3>
-                        <p className="font-mono text-[10px] text-muted-foreground uppercase">{w.occupation}</p>
+                        <p className="font-mono text-[10px] text-muted-foreground uppercase">{w.occupation === "Others" ? w.occupationOther : w.occupation}</p>
                       </div>
                       <span className={w.available ? "status-available" : "status-booked"}>
                         {w.available ? "Available" : "Booked"}

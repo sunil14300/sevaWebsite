@@ -22,9 +22,14 @@ const workerSchema = new mongoose.Schema(
       enum: [
         "Plumber", "Electrician", "Painter", "Mechanic", "Cook",
         "Carpenter", "Barber", "Sweeper", "Mason", "Driver",
-        "Helper", "Cobbler", "Technical Person", "Labour",
+        "Helper", "Cobbler", "Technical Person", "Labour", "Others",
       ],
       required: function () { return this.role === "worker"; },
+    },
+    occupationOther: {
+      type: String,
+      trim: true,
+      required: function () { return this.role === "worker" && this.occupation === "Others"; },
     },
     aadhaar: {
       type: String,
