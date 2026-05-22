@@ -44,19 +44,19 @@ const Index = () => {
       {/* Hero */}
       <section className="container py-20 md:py-32">
         <div className="max-w-3xl">
-          <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground mb-4">
+          <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground mb-4 animate-fade-in">
             Service Marketplace
           </p>
-          <h1 className="text-4xl md:text-6xl font-bold leading-tight tracking-tight mb-6">
+          <h1 className="text-4xl md:text-6xl font-bold leading-tight tracking-tight mb-6 animate-fade-in" style={{animationDelay: "0.1s"}}>
             Find skilled workers<span className="text-primary">.</span>
             <br />
             Get work done<span className="text-primary">.</span>
           </h1>
-          <p className="font-body text-lg md:text-xl text-muted-foreground max-w-xl mb-10">
+          <p className="font-body text-lg md:text-xl text-muted-foreground max-w-xl mb-10 animate-fade-in" style={{animationDelay: "0.2s"}}>
             Search for labour, workers and employees as per your requirement — plumbers, electricians, mechanics, cooks and more. Immediate home service.
           </p>
 
-          <form onSubmit={handleSearch} className="flex gap-0 max-w-xl">
+          <form onSubmit={handleSearch} className="flex gap-0 max-w-xl animate-fade-in" style={{animationDelay: "0.3s"}}>
             <div className="relative flex-1">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <input
@@ -64,12 +64,12 @@ const Index = () => {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search for a service... (e.g. plumber, electrician)"
-                className="w-full h-12 pl-11 pr-4 bg-card border border-border font-mono text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
+                className="w-full h-12 pl-11 pr-4 bg-card border border-border font-mono text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-all duration-300 hover:border-primary/50"
               />
             </div>
             <button
               type="submit"
-              className="h-12 px-8 bg-primary text-primary-foreground font-mono text-xs uppercase tracking-widest hover:opacity-90 transition-opacity"
+              className="h-12 px-8 bg-primary text-primary-foreground font-mono text-xs uppercase tracking-widest hover:opacity-90 hover:shadow-lg transition-all duration-300 active:scale-95"
             >
               Search
             </button>
@@ -81,9 +81,9 @@ const Index = () => {
       <section className="workshop-panel">
         <div className="container">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {STATS.map((stat) => (
-              <div key={stat.label} className="text-center">
-                <div className="font-mono text-3xl font-bold text-secondary-foreground mb-1">
+            {STATS.map((stat, idx) => (
+              <div key={stat.label} className="text-center animate-fade-in" style={{animationDelay: `${0.4 + idx * 0.1}s`}}>
+                <div className="font-mono text-3xl font-bold text-secondary-foreground mb-1 hover:text-primary transition-colors duration-300">
                   {stat.value}
                 </div>
                 <div className="font-mono text-xs uppercase tracking-widest text-secondary-foreground/60">
@@ -107,17 +107,20 @@ const Index = () => {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 grid-base">
-          {SERVICE_CATEGORIES.map((cat) => (
+          {SERVICE_CATEGORIES.map((cat, idx) => (
             <div
               key={cat.name}
               onClick={() => handleCategoryClick(cat.name)}
-              className="category-card group"
+              className="category-card group animate-fade-in hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
+              style={{animationDelay: `${0.6 + idx * 0.05}s`}}
             >
-              <div className="text-3xl mb-3">{cat.icon}</div>
-              <h3 className="font-mono text-sm font-bold uppercase tracking-wider mb-1 group-hover:text-primary transition-colors">
+              <div className="text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
+                {cat.icon}
+              </div>
+              <h3 className="font-mono text-sm font-bold uppercase tracking-wider mb-1 group-hover:text-primary transition-colors duration-300">
                 {cat.name}
               </h3>
-              <p className="font-body text-xs text-muted-foreground">
+              <p className="font-body text-xs text-muted-foreground group-hover:text-foreground transition-colors duration-300">
                 {cat.description}
               </p>
             </div>
@@ -142,10 +145,10 @@ const Index = () => {
             { step: "02", title: "Select", desc: "Choose a worker based on skills, location & price" },
             { step: "03", title: "Book", desc: "Confirm your booking with a 7% commission charge" },
             { step: "04", title: "Done", desc: "Get immediate home service and rate the worker" },
-          ].map((item) => (
-            <div key={item.step} className="relative">
-              <span className="font-mono text-5xl font-bold text-muted/80">{item.step}</span>
-              <h3 className="font-mono text-sm font-bold uppercase tracking-wider mt-2 mb-1">
+          ].map((item, idx) => (
+            <div key={item.step} className="relative animate-fade-in hover:transform hover:scale-105 transition-all duration-300" style={{animationDelay: `${1.0 + idx * 0.1}s`}}>
+              <span className="font-mono text-5xl font-bold text-muted/80 group-hover:text-primary transition-colors duration-300">{item.step}</span>
+              <h3 className="font-mono text-sm font-bold uppercase tracking-wider mt-2 mb-1 group-hover:text-primary transition-colors duration-300">
                 {item.title}
               </h3>
               <p className="font-body text-sm text-muted-foreground">{item.desc}</p>

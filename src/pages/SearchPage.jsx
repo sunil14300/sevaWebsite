@@ -172,8 +172,8 @@ const SearchPage = () => {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                {workers.map((worker) => (
-                  <div key={worker.registrationId || worker._id} className="worker-card">
+                {workers.map((worker, idx) => (
+                  <div key={worker.registrationId || worker._id} className="worker-card animate-fade-in hover:shadow-lg transition-all duration-300" style={{animationDelay: `${idx * 0.05}s`}}>
                     <div className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex items-center gap-3">
@@ -218,7 +218,7 @@ const SearchPage = () => {
                           <button
                             disabled={!worker.available}
                             onClick={() => setBookingWorker(worker)}
-                            className="px-4 py-2 bg-primary text-primary-foreground font-mono text-xs uppercase tracking-widest disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 transition-opacity"
+                            className="px-4 py-2 bg-primary text-primary-foreground font-mono text-xs uppercase tracking-widest disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 hover:shadow-md transition-all duration-300 active:scale-95"
                           >
                             Book Now
                           </button>
