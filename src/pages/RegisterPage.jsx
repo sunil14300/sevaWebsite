@@ -15,18 +15,128 @@ const RegisterPage = () => {
     name: "", address: "", dob: "", mobile: "", email: "",
     state: "", occupation: "", occupationOther: "", aadhaar: "", pan: "", priceCharge: "", password: "",
   });
+  const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
   const [regId, setRegId] = useState("");
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
+  // Validation functions
+  const validateName = (name) => {
+    if (!name.trim()) return "Name is required";
+    if (!/^[a-zA-Z\s]+$/.test(name)) return "Name should only contain letters and spaces";
+    if (name.trim().length < 2) return "Name must be at least 2 characters";
+    return "";
+  };
+
+  const validateMobile = (mobile) => {
+    if (!mobile) return "Mobile number is required";
+    const cleanMobile = mobile.replace(/\D/g, "");
+    if (cleanMobile.length < 10) return "Mobile number must be at least 10 digits";
+    if (cleanMobile.length > 10) return "Mobile number must be 10 digits";
+    return "";
+  };
+
+  const validateEmail = (email) => {
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return "Enter a valid email address";
+    return "";
+  };
+
+  const validatePassword = (password) => {
+    if (!password) return "Password is required";
+    if (password.length < 6) return "Password must be at least 6 characters";
+    return "";
+  };
+
+  const validateAadhaar = (aadhaar) => {
+    if (!aadhaar) return "Aadhaar number is required";
+    const cleanAadhaar = aadhaar.replace(/\D/g, "");
+    if (cleanAadhaar.length !== 12) return "Aadhaar number must be 12 digits";
+    return "";
+  };
+
+  const validatePriceCharge = (price) => {
+    if (!price) return "Price charge is required";
+    if (isNaN(price) || parseFloat(price) <= 0) return "Price must be a valid positive number";
+    return "";
+  };
+
+  const validateDOB = (dob) => {
+    if (!dob) return "Date of birth is required";
+    const birthDate = new Date(dob);
+    const today = new Date();
+    const age = today.getFullYear() - birthDate.getFullYear();
+    if (age < 18) return "Must be at least 18 years old";
+    return "";
+  };
+
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    
+    // Real-time validation for specific fields
+    if (name === "name") {
+      const cleanedValue = value.replace(/[0-9]/g, ""); // Remove numbers automatically
+      setFormData({ ...formData, [name]: cleanedValue });
+      setErrors({ ...errors, [name]: validateName(cleanedValue) });
+    } else if (name === "mobile") {
+      // Allow only digits
+      const cleanedValue = value.replace(/\D/g, "").slice(0, 10);
+      setFormData({ ...formData, [name]: cleanedValue });
+      setErrors({ ...errors, [name]: validateMobile(cleanedValue) });
+    } else if (name === "email") {
+      setFormData({ ...formData, [name]: value });
+      setErrors({ ...errors, [name]: validateEmail(value) });
+    } else if (name === "password") {
+      setFormData({ ...formData, [name]: value });
+      setErrors({ ...errors, [name]: validatePassword(value) });
+    } else if (name === "aadhaar") {
+      const cleanedValue = value.replace(/\D/g, "").slice(0, 12);
+      setFormData({ ...formData, [name]: cleanedValue });
+      setErrors({ ...errors, [name]: validateAadhaar(cleanedValue) });
+    } else if (name === "priceCharge") {
+      setFormData({ ...formData, [name]: value });
+      setErrors({ ...errors, [name]: validatePriceCharge(value) });
+    } else if (name === "dob") {
+      setFormData({ ...formData, [name]: value });
+      setErrors({ ...errors, [name]: validateDOB(value) });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    
+    newErrors.name = validateName(formData.name);
+    newErrors.mobile = validateMobile(formData.mobile);
+    newErrors.address = !formData.address ? "Address is required" : "";
+    newErrors.dob = validateDOB(formData.dob);
+    newErrors.state = !formData.state ? "State is required" : "";
+    newErrors.email = validateEmail(formData.email);
+    newErrors.password = validatePassword(formData.password);
+
+    if (role === "worker") {
+      newErrors.occupation = !formData.occupation ? "Occupation is required" : "";
+      if (formData.occupation === "Others") {
+        newErrors.occupationOther = !formData.occupationOther ? "Please specify your occupation" : "";
+      }
+      newErrors.aadhaar = validateAadhaar(formData.aadhaar);
+      newErrors.priceCharge = validatePriceCharge(formData.priceCharge);
+    }
+
+    setErrors(newErrors);
+    return Object.values(newErrors).every(error => !error);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      toast.error("Please fix the errors in the form");
+      return;
+    }
+
     setLoading(true);
     try {
       const payload = { ...formData, role };
@@ -137,8 +247,14 @@ const RegisterPage = () => {
                   required={field.required}
                   value={formData[field.name]}
                   onChange={handleChange}
-                  className="w-full h-11 px-4 bg-card border border-border font-body text-sm focus:outline-none focus:border-primary transition-colors"
+                  placeholder={field.name === "mobile" ? "Enter 10 digit number" : ""}
+                  className={`w-full h-11 px-4 bg-card border font-body text-sm focus:outline-none transition-colors ${
+                    errors[field.name] ? "border-red-500 focus:border-red-500" : "border-border focus:border-primary"
+                  }`}
                 />
+                {errors[field.name] && (
+                  <p className="text-red-500 text-xs mt-1 font-body">{errors[field.name]}</p>
+                )}
               </div>
             ))}
 
@@ -153,13 +269,18 @@ const RegisterPage = () => {
                     required
                     value={formData.occupation}
                     onChange={handleChange}
-                    className="w-full h-11 px-4 bg-card border border-border font-body text-sm focus:outline-none focus:border-primary transition-colors"
+                    className={`w-full h-11 px-4 bg-card border font-body text-sm focus:outline-none transition-colors ${
+                      errors.occupation ? "border-red-500 focus:border-red-500" : "border-border focus:border-primary"
+                    }`}
                   >
                     <option value="">Select occupation</option>
                     {OCCUPATIONS.map((o) => (
                       <option key={o} value={o}>{o}</option>
                     ))}
                   </select>
+                  {errors.occupation && (
+                    <p className="text-red-500 text-xs mt-1 font-body">{errors.occupation}</p>
+                  )}
                 </div>
                 {formData.occupation === "Others" && (
                   <div>
@@ -173,8 +294,13 @@ const RegisterPage = () => {
                       placeholder="Enter your occupation"
                       value={formData.occupationOther}
                       onChange={handleChange}
-                      className="w-full h-11 px-4 bg-card border border-border font-body text-sm focus:outline-none focus:border-primary transition-colors"
+                      className={`w-full h-11 px-4 bg-card border font-body text-sm focus:outline-none transition-colors ${
+                        errors.occupationOther ? "border-red-500 focus:border-red-500" : "border-border focus:border-primary"
+                      }`}
                     />
+                    {errors.occupationOther && (
+                      <p className="text-red-500 text-xs mt-1 font-body">{errors.occupationOther}</p>
+                    )}
                   </div>
                 )}
               </>
@@ -190,15 +316,20 @@ const RegisterPage = () => {
                 required
                 value={formData.password}
                 onChange={handleChange}
-                className="w-full h-11 px-4 bg-card border border-border font-body text-sm focus:outline-none focus:border-primary transition-colors"
+                className={`w-full h-11 px-4 bg-card border font-body text-sm focus:outline-none transition-colors ${
+                  errors.password ? "border-red-500 focus:border-red-500" : "border-border focus:border-primary"
+                }`}
               />
+              {errors.password && (
+                <p className="text-red-500 text-xs mt-1 font-body">{errors.password}</p>
+              )}
             </div>
 
             <div className="pt-4">
               <button
                 type="submit"
-                disabled={loading}
-                className="w-full h-12 bg-primary text-primary-foreground font-mono text-xs uppercase tracking-widest hover:opacity-90 transition-opacity disabled:opacity-50"
+                disabled={loading || Object.values(errors).some(error => error)}
+                className="w-full h-12 bg-primary text-primary-foreground font-mono text-xs uppercase tracking-widest hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? "Registering..." : `Register as ${role === "customer" ? "Customer" : "Worker"}`}
               </button>

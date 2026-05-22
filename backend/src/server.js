@@ -14,9 +14,14 @@ const notificationRoutes = require("./routes/notifications");
 
 const app = express();
 
+// Parse CORS origins from comma-separated string
+const corsOrigin = process.env.CORS_ORIGIN 
+  ? process.env.CORS_ORIGIN.split(",").map(origin => origin.trim())
+  : "*";
+
 // Middleware
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || "*",
+  origin: corsOrigin,
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"]

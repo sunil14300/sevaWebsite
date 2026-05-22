@@ -15,6 +15,8 @@ const AdminPage = () => {
   const [loading, setLoading] = useState(false);
   const [roleFilter, setRoleFilter] = useState("");
   const [verifiedFilter, setVerifiedFilter] = useState("");
+  const [userSearchQuery, setUserSearchQuery] = useState("");
+  const [bookingSearchQuery, setBookingSearchQuery] = useState("");
   const [editingUser, setEditingUser] = useState(null);
 
   useEffect(() => {
@@ -48,6 +50,27 @@ const AdminPage = () => {
       setLoading(false);
     }
   };
+
+  // Filter users based on search query
+  const filteredUsers = users.filter((user) => {
+    const searchTerm = userSearchQuery.toLowerCase();
+    return (
+      user.name.toLowerCase().includes(searchTerm) ||
+      user.registrationId.toLowerCase().includes(searchTerm) ||
+      user.mobile.includes(searchTerm) ||
+      user.email?.toLowerCase().includes(searchTerm)
+    );
+  });
+
+  // Filter bookings based on search query
+  const filteredBookings = bookings.filter((booking) => {
+    const searchTerm = bookingSearchQuery.toLowerCase();
+    return (
+      booking.customerName?.toLowerCase().includes(searchTerm) ||
+      booking.workerName?.toLowerCase().includes(searchTerm) ||
+      booking._id?.includes(searchTerm)
+    );
+  });
 
   const loadBookings = async () => {
     setLoading(true);
@@ -187,105 +210,135 @@ const AdminPage = () => {
         {/* Users */}
         {tab === "users" && (
           <>
-            <div className="flex gap-3 mb-6 flex-wrap">
-              <select
-                value={roleFilter}
-                onChange={(e) => setRoleFilter(e.target.value)}
-                className="h-10 px-3 bg-card border border-border font-mono text-xs focus:outline-none focus:border-primary"
-              >
-                <option value="">All Roles</option>
-                <option value="worker">Workers</option>
-                <option value="customer">Customers</option>
-                <option value="admin">Admins</option>
-              </select>
-              <select
-                value={verifiedFilter}
-                onChange={(e) => setVerifiedFilter(e.target.value)}
-                className="h-10 px-3 bg-card border border-border font-mono text-xs focus:outline-none focus:border-primary"
-              >
-                <option value="">All Status</option>
-                <option value="true">Verified</option>
-                <option value="false">Unverified</option>
-              </select>
+            <div className="mb-6 space-y-4">
+              {/* Search Bar */}
+              <div className="flex gap-0">
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    value={userSearchQuery}
+                    onChange={(e) => setUserSearchQuery(e.target.value)}
+                    placeholder="Search by name, ID, mobile, or email..."
+                    className="w-full h-11 pl-4 pr-4 bg-card border border-border font-mono text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
+                  />
+                </div>
+              </div>
+
+              {/* Filters */}
+              <div className="flex gap-3 flex-wrap">
+                <select
+                  value={roleFilter}
+                  onChange={(e) => setRoleFilter(e.target.value)}
+                  className="h-10 px-3 bg-card border border-border font-mono text-xs focus:outline-none focus:border-primary"
+                >
+                  <option value="">All Roles</option>
+                  <option value="worker">Workers</option>
+                  <option value="customer">Customers</option>
+                  <option value="admin">Admins</option>
+                </select>
+                <select
+                  value={verifiedFilter}
+                  onChange={(e) => setVerifiedFilter(e.target.value)}
+                  className="h-10 px-3 bg-card border border-border font-mono text-xs focus:outline-none focus:border-primary"
+                >
+                  <option value="">All Status</option>
+                  <option value="true">Verified</option>
+                  <option value="false">Unverified</option>
+                </select>
+              </div>
             </div>
 
             {loading ? (
-              <p className="font-mono text-sm text-muted-foreground text-center py-10">Loading...</p>
+              <div className="space-y-4">
+                <div className="h-32 bg-card border border-border animate-pulse rounded"></div>
+                <div className="h-32 bg-card border border-border animate-pulse rounded"></div>
+                <div className="h-32 bg-card border border-border animate-pulse rounded"></div>
+              </div>
             ) : (
-              <div className="space-y-3">
-                {users.map((u) => (
-                  <div key={u._id} className="bg-card border border-border p-5">
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-mono text-base font-bold">{u.name}</h3>
-                          <span className="font-mono text-[10px] px-2 py-0.5 bg-secondary text-secondary-foreground uppercase">{u.role}</span>
-                          {u.verified ? (
-                            <span className="font-mono text-[10px] text-primary">✓ Verified</span>
-                          ) : (
-                            <span className="font-mono text-[10px] text-destructive">✗ Unverified</span>
+              <>
+                <p className="font-mono text-xs text-muted-foreground mb-4">
+                  {filteredUsers.length} user{filteredUsers.length !== 1 ? "s" : ""} found
+                </p>
+                {filteredUsers.length === 0 ? (
+                  <div className="text-center py-10">
+                    <p className="font-mono text-sm text-muted-foreground">
+                      {userSearchQuery ? `No users found matching "${userSearchQuery}"` : "No users found"}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {filteredUsers.map((u) => (
+                      <div key={u._id} className="bg-card border border-border p-5 hover:border-primary transition-colors">
+                        <div className="flex items-start justify-between mb-3">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h3 className="font-mono text-base font-bold">{u.name}</h3>
+                              <span className="font-mono text-[10px] px-2 py-0.5 bg-secondary text-secondary-foreground uppercase">{u.role}</span>
+                              {u.verified ? (
+                                <span className="font-mono text-[10px] text-primary">✓ Verified</span>
+                              ) : (
+                                <span className="font-mono text-[10px] text-destructive">✗ Unverified</span>
+                              )}
+                            </div>
+                            <p className="font-mono text-xs text-muted-foreground">{u.registrationId}</p>
+                          </div>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => verifyUser(u._id, !u.verified)}
+                              className="p-2 hover:bg-muted transition-colors"
+                              title={u.verified ? "Remove verification" : "Verify"}
+                            >
+                              {u.verified ? <XCircle className="h-4 w-4 text-destructive" /> : <CheckCircle className="h-4 w-4 text-primary" />}
+                            </button>
+                            <button onClick={() => setEditingUser({ ...u })} className="p-2 hover:bg-muted transition-colors" title="Edit">
+                              <Edit className="h-4 w-4" />
+                            </button>
+                            <button onClick={() => deleteUser(u._id)} className="p-2 hover:bg-muted transition-colors" title="Delete">
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </button>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                          <div>
+                            <p className="font-mono text-[10px] text-muted-foreground uppercase">Mobile</p>
+                            <p className="font-body">{u.mobile}</p>
+                          </div>
+                          <div>
+                            <p className="font-mono text-[10px] text-muted-foreground uppercase">State</p>
+                            <p className="font-body">{u.state}</p>
+                          </div>
+                          {u.role === "worker" && (
+                            <>
+                              <div>
+                                <p className="font-mono text-[10px] text-muted-foreground uppercase">Occupation</p>
+                                <p className="font-body">{u.occupation}</p>
+                              </div>
+                              <div>
+                                <p className="font-mono text-[10px] text-muted-foreground uppercase">Price</p>
+                                <p className="font-body">{u.priceCharge}</p>
+                              </div>
+                            </>
+                          )}
+                          <div>
+                            <p className="font-mono text-[10px] text-muted-foreground uppercase">Email</p>
+                            <p className="font-body">{u.email || "—"}</p>
+                          </div>
+                          <div>
+                            <p className="font-mono text-[10px] text-muted-foreground uppercase">Joined</p>
+                            <p className="font-body">{new Date(u.createdAt).toLocaleDateString()}</p>
+                          </div>
+                          {u.role === "worker" && (
+                            <div>
+                              <p className="font-mono text-[10px] text-muted-foreground uppercase">Aadhaar</p>
+                              <p className="font-body">{u.aadhaar}</p>
+                            </div>
                           )}
                         </div>
-                        <p className="font-mono text-xs text-muted-foreground">{u.registrationId}</p>
                       </div>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => verifyUser(u._id, !u.verified)}
-                          className="p-2 hover:bg-muted transition-colors"
-                          title={u.verified ? "Remove verification" : "Verify"}
-                        >
-                          {u.verified ? <XCircle className="h-4 w-4 text-destructive" /> : <CheckCircle className="h-4 w-4 text-primary" />}
-                        </button>
-                        <button onClick={() => setEditingUser({ ...u })} className="p-2 hover:bg-muted transition-colors" title="Edit">
-                          <Edit className="h-4 w-4" />
-                        </button>
-                        <button onClick={() => deleteUser(u._id)} className="p-2 hover:bg-muted transition-colors" title="Delete">
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </button>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                      <div>
-                        <p className="font-mono text-[10px] text-muted-foreground uppercase">Mobile</p>
-                        <p className="font-body">{u.mobile}</p>
-                      </div>
-                      <div>
-                        <p className="font-mono text-[10px] text-muted-foreground uppercase">State</p>
-                        <p className="font-body">{u.state}</p>
-                      </div>
-                      {u.role === "worker" && (
-                        <>
-                          <div>
-                            <p className="font-mono text-[10px] text-muted-foreground uppercase">Occupation</p>
-                            <p className="font-body">{u.occupation}</p>
-                          </div>
-                          <div>
-                            <p className="font-mono text-[10px] text-muted-foreground uppercase">Price</p>
-                            <p className="font-body">{u.priceCharge}</p>
-                          </div>
-                        </>
-                      )}
-                      <div>
-                        <p className="font-mono text-[10px] text-muted-foreground uppercase">Email</p>
-                        <p className="font-body">{u.email || "—"}</p>
-                      </div>
-                      <div>
-                        <p className="font-mono text-[10px] text-muted-foreground uppercase">Joined</p>
-                        <p className="font-body">{new Date(u.createdAt).toLocaleDateString()}</p>
-                      </div>
-                      {u.role === "worker" && (
-                        <div>
-                          <p className="font-mono text-[10px] text-muted-foreground uppercase">Aadhaar</p>
-                          <p className="font-body">{u.aadhaar}</p>
-                        </div>
-                      )}
-                    </div>
+                    ))}
                   </div>
-                ))}
-                {users.length === 0 && (
-                  <p className="font-mono text-sm text-muted-foreground text-center py-10">No users found</p>
                 )}
-              </div>
+              </>
             )}
           </>
         )}
@@ -293,67 +346,96 @@ const AdminPage = () => {
         {/* Bookings */}
         {tab === "bookings" && (
           <>
-            {loading ? (
-              <p className="font-mono text-sm text-muted-foreground text-center py-10">Loading...</p>
-            ) : (
-              <div className="space-y-3">
-                {bookings.map((b) => (
-                  <div key={b._id} className="bg-card border border-border p-5">
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <h3 className="font-mono text-base font-bold">{b.customerName}</h3>
-                        <p className="font-mono text-xs text-muted-foreground">
-                          Worker: {b.workerId?.name || "Unknown"} ({b.workerId?.registrationId})
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs uppercase tracking-widest text-primary">{b.status || "pending"}</span>
-                        <button onClick={() => deleteBooking(b._id)} className="p-2 hover:bg-muted transition-colors">
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </button>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-sm mb-3">
-                      <div>
-                        <p className="font-mono text-[10px] text-muted-foreground uppercase">Date</p>
-                        <p className="font-body">{new Date(b.serviceDate).toLocaleDateString()}</p>
-                      </div>
-                      <div>
-                        <p className="font-mono text-[10px] text-muted-foreground uppercase">Price</p>
-                        <p className="font-body font-bold">₹{b.agreedPrice}</p>
-                      </div>
-                      <div>
-                        <p className="font-mono text-[10px] text-muted-foreground uppercase">Commission</p>
-                        <p className="font-body">₹{b.commission?.toFixed(2)}</p>
-                      </div>
-                      <div>
-                        <p className="font-mono text-[10px] text-muted-foreground uppercase">Mobile</p>
-                        <p className="font-body">{b.customerMobile}</p>
-                      </div>
-                      <div>
-                        <p className="font-mono text-[10px] text-muted-foreground uppercase">Address</p>
-                        <p className="font-body">{b.customerAddress}</p>
-                      </div>
-                    </div>
-                    <div className="flex gap-2 pt-3 border-t border-border">
-                      {["pending", "confirmed", "completed", "cancelled"].map((s) => (
-                        <button
-                          key={s}
-                          onClick={() => updateBookingStatus(b._id, s)}
-                          className={`px-3 py-1 font-mono text-[10px] uppercase tracking-widest border transition-colors ${
-                            b.status === s ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:border-primary"
-                          }`}
-                        >
-                          {s}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-                {bookings.length === 0 && (
-                  <p className="font-mono text-sm text-muted-foreground text-center py-10">No bookings found</p>
-                )}
+            <div className="mb-6">
+              {/* Search Bar */}
+              <div className="flex gap-0">
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    value={bookingSearchQuery}
+                    onChange={(e) => setBookingSearchQuery(e.target.value)}
+                    placeholder="Search by customer name, worker name, or booking ID..."
+                    className="w-full h-11 pl-4 pr-4 bg-card border border-border font-mono text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
+                  />
+                </div>
               </div>
+            </div>
+
+            {loading ? (
+              <div className="space-y-4">
+                <div className="h-40 bg-card border border-border animate-pulse rounded"></div>
+                <div className="h-40 bg-card border border-border animate-pulse rounded"></div>
+                <div className="h-40 bg-card border border-border animate-pulse rounded"></div>
+              </div>
+            ) : (
+              <>
+                <p className="font-mono text-xs text-muted-foreground mb-4">
+                  {filteredBookings.length} booking{filteredBookings.length !== 1 ? "s" : ""} found
+                </p>
+                {filteredBookings.length === 0 ? (
+                  <div className="text-center py-10">
+                    <p className="font-mono text-sm text-muted-foreground">
+                      {bookingSearchQuery ? `No bookings found matching "${bookingSearchQuery}"` : "No bookings found"}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {filteredBookings.map((b) => (
+                      <div key={b._id} className="bg-card border border-border p-5 hover:border-primary transition-colors">
+                        <div className="flex items-start justify-between mb-3">
+                          <div>
+                            <h3 className="font-mono text-base font-bold">{b.customerName}</h3>
+                            <p className="font-mono text-xs text-muted-foreground">
+                              Worker: {b.workerId?.name || "Unknown"} ({b.workerId?.registrationId})
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono text-xs uppercase tracking-widest text-primary bg-primary/10 px-2 py-1 rounded">{b.status || "pending"}</span>
+                            <button onClick={() => deleteBooking(b._id)} className="p-2 hover:bg-muted transition-colors" title="Delete">
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </button>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-sm mb-3">
+                          <div>
+                            <p className="font-mono text-[10px] text-muted-foreground uppercase">Date</p>
+                            <p className="font-body">{new Date(b.serviceDate).toLocaleDateString()}</p>
+                          </div>
+                          <div>
+                            <p className="font-mono text-[10px] text-muted-foreground uppercase">Price</p>
+                            <p className="font-body font-bold">₹{b.agreedPrice}</p>
+                          </div>
+                          <div>
+                            <p className="font-mono text-[10px] text-muted-foreground uppercase">Commission</p>
+                            <p className="font-body">₹{b.commission?.toFixed(2)}</p>
+                          </div>
+                          <div>
+                            <p className="font-mono text-[10px] text-muted-foreground uppercase">Mobile</p>
+                            <p className="font-body">{b.customerMobile}</p>
+                          </div>
+                          <div>
+                            <p className="font-mono text-[10px] text-muted-foreground uppercase">Address</p>
+                            <p className="font-body">{b.customerAddress}</p>
+                          </div>
+                        </div>
+                        <div className="flex gap-2 pt-3 border-t border-border flex-wrap">
+                          {["pending", "confirmed", "completed", "cancelled"].map((s) => (
+                            <button
+                              key={s}
+                              onClick={() => updateBookingStatus(b._id, s)}
+                              className={`px-3 py-1 font-mono text-[10px] uppercase tracking-widest border transition-colors ${
+                                b.status === s ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:border-primary"
+                              }`}
+                            >
+                              {s}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
             )}
           </>
         )}

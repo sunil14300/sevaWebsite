@@ -10,7 +10,15 @@ router.get("/", async (req, res) => {
     const { q, state, occupation, available, page = 1, limit = 20 } = req.query;
     const filter = { role: "worker" };
 
-    if (q) filter.$text = { $search: q };
+    // Case-insensitive substring search across multiple fields
+    if (q) {
+      filter.$or = [
+        { name: new RegExp(q, "i") },
+        { occupation: new RegExp(q, "i") },
+        { occupationOther: new RegExp(q, "i") },
+        { address: new RegExp(q, "i") }
+      ];
+    }
     if (state) filter.state = new RegExp(state, "i");
     if (occupation) filter.occupation = new RegExp(occupation, "i");
     if (available !== undefined) filter.available = available === "true";

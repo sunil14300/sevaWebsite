@@ -37,6 +37,22 @@ const SearchPage = () => {
     fetchWorkers(query);
   }, []);
 
+  // Real-time search as user types
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setQuery(value);
+    
+    // If input is empty, clear results
+    if (!value.trim()) {
+      setWorkers([]);
+      setTotal(0);
+      return;
+    }
+    
+    // Auto-search as user types
+    fetchWorkers(value);
+  };
+
   const handleBooking = async (e) => {
     e.preventDefault();
     try {
@@ -121,99 +137,103 @@ const SearchPage = () => {
               <input
                 type="text"
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && fetchWorkers(query)}
+                onChange={handleSearchChange}
+                onKeyDown={(e) => e.key === "Enter" && query.trim() && fetchWorkers(query)}
                 placeholder="Search workers..."
                 className="w-full h-12 pl-11 pr-4 bg-card border border-border font-mono text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
               />
             </div>
             <button
-              onClick={() => fetchWorkers(query)}
-              className="h-12 px-6 bg-primary text-primary-foreground font-mono text-xs uppercase tracking-widest hover:opacity-90 transition-opacity"
+              onClick={() => query.trim() && fetchWorkers(query)}
+              disabled={!query.trim() || loading}
+              className="h-12 px-6 bg-primary text-primary-foreground font-mono text-xs uppercase tracking-widest hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Search
+              {loading ? "..." : "Search"}
             </button>
           </div>
         </div>
 
         {loading ? (
-          <p className="font-mono text-sm text-muted-foreground py-10 text-center">Loading workers...</p>
+          <p className="font-mono text-sm text-muted-foreground py-10 text-center">Searching workers...</p>
+        ) : query.trim() === "" ? (
+          <div className="text-center py-20">
+            <Search className="h-12 w-12 mx-auto text-muted-foreground mb-4 opacity-50" />
+            <p className="font-mono text-sm text-muted-foreground">Start typing to search for workers</p>
+          </div>
         ) : (
           <>
             <p className="font-mono text-xs text-muted-foreground mb-6">
               {total} worker{total !== 1 ? "s" : ""} found
             </p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-              {workers.map((worker) => (
-                <div key={worker.registrationId || worker._id} className="worker-card">
-                  <div className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-full overflow-hidden bg-muted border border-border flex-shrink-0 flex items-center justify-center">
-                          {worker.profilePhoto ? (
-                            <img src={worker.profilePhoto} alt={worker.name} className="w-full h-full object-cover" />
-                          ) : (
-                            <User className="w-5 h-5 text-muted-foreground" />
+            {workers.length === 0 ? (
+              <div className="text-center py-20">
+                <p className="font-mono text-sm text-muted-foreground">No workers found matching "{query}"</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {workers.map((worker) => (
+                  <div key={worker.registrationId || worker._id} className="worker-card">
+                    <div className="p-6">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 rounded-full overflow-hidden bg-muted border border-border flex-shrink-0 flex items-center justify-center">
+                            {worker.profilePhoto ? (
+                              <img src={worker.profilePhoto} alt={worker.name} className="w-full h-full object-cover" />
+                            ) : (
+                              <User className="w-5 h-5 text-muted-foreground" />
+                            )}
+                          </div>
+                          <div>
+                            <h3 className="font-mono text-base font-bold">{worker.name}</h3>
+                            <p className="font-mono text-xs text-muted-foreground uppercase tracking-wider">
+                              {worker.occupation}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-end gap-1">
+                          <span className={worker.available ? "status-available" : "status-booked"}>
+                            {worker.available ? "Available" : "Booked"}
+                          </span>
+                          {worker.verified && (
+                            <span className="font-mono text-[10px] text-primary uppercase tracking-wider">✓ Verified</span>
                           )}
                         </div>
-                        <div>
-                          <h3 className="font-mono text-base font-bold">{worker.name}</h3>
-                          <p className="font-mono text-xs text-muted-foreground uppercase tracking-wider">
-                            {worker.occupation}
-                          </p>
+                      </div>
+
+                      <div className="space-y-2 mb-4">
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <MapPin className="h-3 w-3" />
+                          <span className="font-body text-sm">{worker.address || worker.state}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Star className="h-3 w-3 text-primary" />
+                          <span className="font-body text-sm">{worker.rating || 0} / 5.0</span>
                         </div>
                       </div>
-                      <div className="flex flex-col items-end gap-1">
-                        <span className={worker.available ? "status-available" : "status-booked"}>
-                          {worker.available ? "Available" : "Booked"}
-                        </span>
-                        {worker.verified && (
-                          <span className="font-mono text-[10px] text-primary uppercase tracking-wider">✓ Verified</span>
+
+                      <div className="flex items-center justify-between pt-4 border-t border-border">
+                        <span className="font-mono text-sm font-bold">{worker.priceCharge}</span>
+                        {isCustomer && (
+                          <button
+                            disabled={!worker.available}
+                            onClick={() => setBookingWorker(worker)}
+                            className="px-4 py-2 bg-primary text-primary-foreground font-mono text-xs uppercase tracking-widest disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 transition-opacity"
+                          >
+                            Book Now
+                          </button>
+                        )}
+                        {!isLoggedIn && (
+                          <span className="font-mono text-[10px] text-muted-foreground">Login as customer to book</span>
                         )}
                       </div>
-                    </div>
 
-                    <div className="space-y-2 mb-4">
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <MapPin className="h-3 w-3" />
-                        <span className="font-body text-sm">{worker.address || worker.state}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Star className="h-3 w-3 text-primary" />
-                        <span className="font-body text-sm">{worker.rating || 0} / 5.0</span>
-                      </div>
+                      <p className="font-mono text-[10px] text-muted-foreground mt-3 uppercase tracking-wider">
+                        ID: {worker.registrationId} · {worker.state}
+                      </p>
                     </div>
-
-                    <div className="flex items-center justify-between pt-4 border-t border-border">
-                      <span className="font-mono text-sm font-bold">{worker.priceCharge}</span>
-                      {isCustomer && (
-                        <button
-                          disabled={!worker.available}
-                          onClick={() => setBookingWorker(worker)}
-                          className="px-4 py-2 bg-primary text-primary-foreground font-mono text-xs uppercase tracking-widest disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 transition-opacity"
-                        >
-                          Book Now
-                        </button>
-                      )}
-                      {!isLoggedIn && (
-                        <span className="font-mono text-[10px] text-muted-foreground">Login as customer to book</span>
-                      )}
-                    </div>
-
-                    <p className="font-mono text-[10px] text-muted-foreground mt-3 uppercase tracking-wider">
-                      ID: {worker.registrationId} · {worker.state}
-                    </p>
                   </div>
-                </div>
-              ))}
-            </div>
-
-            {workers.length === 0 && !loading && (
-              <div className="text-center py-20">
-                <p className="font-mono text-sm text-muted-foreground">
-                  {query ? `No workers found for "${query}".` : "No workers found. Is the backend running?"}
-                </p>
+                ))}
               </div>
             )}
           </>
