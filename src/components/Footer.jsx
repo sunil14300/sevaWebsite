@@ -26,7 +26,7 @@ const Footer = () => {
             <ul className="space-y-2 font-body text-sm text-secondary-foreground/70">
               <li>info@sevawebsite.com</li>
               <li>+91 8065147502</li>
-              <li>Lucknow, Uttar Pradesh</li>
+              <li>Garhi Harsaru, Gurugram Haryana</li>
             </ul>
           </div>
         </div>
