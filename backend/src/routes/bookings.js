@@ -20,13 +20,6 @@ router.post(
     body("customerMobile").trim().notEmpty().isLength({ min: 10, max: 15 }),
     body("customerAddress").trim().notEmpty().isLength({ max: 300 }),
     body("serviceDate").isISO8601(),
-    body("agreedPrice").custom((value) => {
-      const price = parseFloat(value);
-      if (isNaN(price) || price <= 0) {
-        throw new Error("Agreed price must be a positive number");
-      }
-      return true;
-    }),
     body("description").optional({ checkFalsy: true }).trim(),
   ],
   async (req, res) => {
@@ -38,7 +31,8 @@ router.post(
       if (!worker) return res.status(404).json({ error: "Worker not found." });
       if (!worker.available) return res.status(400).json({ error: "Worker is not available." });
 
-      const commission = parseFloat(req.body.agreedPrice) * COMMISSION_RATE;
+      // const commission = parseFloat(req.body.agreedPrice) * COMMISSION_RATE;
+      const commission = 0; // free for now
 
       const booking = await Booking.create({
         workerId: worker._id,
@@ -48,7 +42,7 @@ router.post(
         customerAddress: req.body.customerAddress,
         serviceDate: req.body.serviceDate,
         description: req.body.description,
-        agreedPrice: req.body.agreedPrice,
+        // agreedPrice: req.body.agreedPrice,
         commission,
       });
 
@@ -57,7 +51,7 @@ router.post(
         userId: worker._id,
         type: "booking_created",
         title: "New Booking Request",
-        message: `${req.body.customerName} booked you for ${new Date(req.body.serviceDate).toLocaleDateString()}. Address: ${req.body.customerAddress}. Price: ₹${req.body.agreedPrice}`,
+        message: `${req.body.customerName} booked you for ${new Date(req.body.serviceDate).toLocaleDateString()}. Address: ${req.body.customerAddress}.`,
         bookingId: booking._id,
       });
 
@@ -109,7 +103,13 @@ router.patch("/:id/status", auth, async (req, res) => {
         userId: booking.customerId,
         type: "booking_accepted",
         title: "Booking Accepted!",
-        message: `${worker?.name || "Worker"} accepted your booking for ${new Date(booking.serviceDate).toLocaleDateString()}. They will arrive at: ${booking.customerAddress}`,
+        message:
+`${req.body.customerName}
+booked you for
+${new Date(req.body.serviceDate).toLocaleDateString()}.
+Address:
+${req.body.customerAddress}.
+Price: ₹${req.body.agreedPrice}`,
         bookingId: booking._id,
       });
     } else if (req.body.status === "cancelled") {

@@ -19,8 +19,8 @@ router.post(
     body("email").optional({ checkFalsy: true }).isEmail().normalizeEmail(),
     body("state").trim().notEmpty(),
     body("role").isIn(["worker", "customer"]),
-    body("password").isLength({ min: 6 }),
     // Worker-only validations
+
     body("occupation").if(body("role").equals("worker")).trim().notEmpty(),
     body("occupationOther").if(body("occupation").equals("Others")).trim().notEmpty().isLength({ min: 2, max: 100 }),
     body("aadhaar").if(body("role").equals("worker")).trim().notEmpty().isLength({ min: 12, max: 12 }),
@@ -35,12 +35,12 @@ router.post(
       const isCustomer = req.body.role === "customer";
       const prefix = isCustomer ? "CUST" : "SEVA";
       const registrationId = prefix + Math.floor(100000 + Math.random() * 900000);
-      const passwordHash = await bcrypt.hash(req.body.password, 10);
 
       const commonData = {
         registrationId,
-        passwordHash,
+
         name: req.body.name,
+
         address: req.body.address,
         dob: req.body.dob,
         mobile: req.body.mobile,

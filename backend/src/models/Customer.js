@@ -12,7 +12,7 @@ const customerSchema = new mongoose.Schema(
     role: { type: String, default: "customer", enum: ["customer"] },
     verified: { type: Boolean, default: false },
     profilePhoto: { type: String, default: "" },
-    passwordHash: { type: String, required: true },
+
   },
   { timestamps: true }
 );

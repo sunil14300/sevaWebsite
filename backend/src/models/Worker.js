@@ -44,7 +44,6 @@ const workerSchema = new mongoose.Schema(
     totalRatings: { type: Number, default: 0 },
     available: { type: Boolean, default: true },
     profilePhoto: { type: String, default: "" },
-    passwordHash: { type: String, required: true },
     // Geolocation
     location: {
       type: { type: String, enum: ["Point"], default: "Point" },

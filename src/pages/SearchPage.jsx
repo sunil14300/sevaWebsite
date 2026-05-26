@@ -13,8 +13,9 @@ const SearchPage = () => {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
   const [bookingWorker, setBookingWorker] = useState(null);
-  const [bookingForm, setBookingForm] = useState({ customerName: "", customerMobile: "", customerAddress: "", serviceDate: "", agreedPrice: "", description: "" });
+  const [bookingForm, setBookingForm] = useState({ customerName: "", customerMobile: "", customerAddress: "", serviceDate: "", description: "" });
   const { isLoggedIn, isCustomer } = useAuth();
+  const [bookingErrors, setBookingErrors] = useState({});
 
   const fetchWorkers = async (q) => {
     setLoading(true);
@@ -53,17 +54,76 @@ const SearchPage = () => {
     fetchWorkers(value);
   };
 
-  const handleBooking = async (e) => {
-    e.preventDefault();
-    try {
-      await api.createBooking({ ...bookingForm, workerId: bookingWorker.registrationId });
-      toast.success("Booking created!");
-      setBookingWorker(null);
-      setBookingForm({ customerName: "", customerMobile: "", customerAddress: "", serviceDate: "", agreedPrice: "", description: "" });
-    } catch (err) {
-      toast.error(err.message || "Booking failed");
-    }
-  };
+      const validateBooking = () => {
+
+      const errors = {};
+
+      if (!bookingForm.customerName.trim()) {errors.customerName = "Name is required";}
+
+      else if (!/^[A-Za-z\s]+$/.test(bookingForm.customerName)) {
+
+      errors.customerName ="Only letters allowed";
+      }
+
+      if (!bookingForm.customerMobile) {
+      errors.customerMobile ="Mobile number required";
+      }
+      else if (!/^\d{10}$/.test(bookingForm.customerMobile)) {
+      errors.customerMobile ="Enter valid 10 digit number";
+      }
+
+      if (!bookingForm.customerAddress.trim()) {
+
+      errors.customerAddress ="Address required";
+      }
+      else if (bookingForm.customerAddress.length < 5) {
+
+      errors.customerAddress = "Address too short";
+
+      }
+
+      if (!bookingForm.serviceDate) {
+
+      errors.serviceDate = "Select service date";
+
+      }
+      setBookingErrors(errors);
+      return Object.keys(errors).length === 0;
+      };
+
+      const handleBooking = async (e) => {
+
+              e.preventDefault();
+
+              if(!validateBooking()){
+
+              toast.error("Please fix errors" );
+              return;
+              }
+
+              try{
+              await api.createBooking({ ...bookingForm,
+              workerId: bookingWorker.registrationId});
+
+              toast.success("Booking created!");
+
+              setBookingWorker(null);
+              setBookingErrors({});
+              setBookingForm({
+
+              customerName:"",
+              customerMobile:"",
+              customerAddress:"",
+              serviceDate:"",
+              description:""
+
+              });
+
+              }catch(err){
+              toast.error(err.message ||"Booking failed");
+              }
+
+              };
 
   return (
     <div className="pt-14">
@@ -96,7 +156,7 @@ const SearchPage = () => {
                 { name: "customerMobile", label: "Your Mobile", type: "tel" },
                 { name: "customerAddress", label: "Service Address", type: "text" },
                 { name: "serviceDate", label: "Service Date", type: "date" },
-                { name: "agreedPrice", label: "Agreed Price (₹)", type: "number" },
+                // { name: "agreedPrice", label: "Agreed Price (₹)", type: "number" },
               ].map((f) => (
                 <div key={f.name}>
                   <label className="block font-mono text-xs uppercase tracking-widest text-muted-foreground mb-1">{f.label}</label>
@@ -104,7 +164,10 @@ const SearchPage = () => {
                     type={f.type}
                     required
                     value={bookingForm[f.name]}
-                    onChange={(e) => setBookingForm({ ...bookingForm, [f.name]: e.target.value })}
+                    onChange={(e)=>{let value =e.target.value; if(f.name==="customerName"){value= value.replace(/[^A-Za-z\s]/g,"");}
+                    if(f.name==="customerMobile"){value=value.replace(/\D/g,"").slice(0,10); }
+                    setBookingForm({...bookingForm,[f.name]: value});}}
+                    
                     className="w-full h-10 px-3 bg-background border border-border font-body text-sm focus:outline-none focus:border-primary transition-colors"
                   />
                 </div>
@@ -117,7 +180,52 @@ const SearchPage = () => {
                   className="w-full h-20 px-3 py-2 bg-background border border-border font-body text-sm focus:outline-none focus:border-primary transition-colors resize-none"
                 />
               </div>
-              <p className="font-mono text-[10px] text-muted-foreground">7% commission will be applied</p>
+              {/* <p className="font-mono text-[10px] text-muted-foreground">7% commission will be applied</p> */}
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mt-4">
+
+          <h4 className="font-semibold text-sm mb-3">📜 Terms & Conditions</h4>
+
+          <div className=" max-h-40 overflow-y-auto border bg-white rounded-md p-3 text-xs text-gray-700 space-y-2 ">
+
+          <p>  1. Worker service price displayed on platform is fixed and non-negotiable. </p>
+          <p> 2. Customer agrees to pay the amount shown before booking. </p>
+          <p>3. Price bargaining after booking is not allowed.</p>
+          <p> 4. False bookings or misuse of platform may lead to account suspension.</p>
+          <p> 5. Customer must provide correct service address and mobile number.</p>
+          <p>6. Worker must complete service professionally and ethically.</p>
+
+          <p> 7. Platform acts only as a service marketplace connecting customers and workers. </p>
+
+          <p> 8. Illegal activities, fraud, abuse or harassment are strictly prohibited. </p>
+
+          <p> 9. Workers are responsible for service quality and professionalism. </p>
+
+          <p>  10. Platform reserves right to suspend suspicious or fraudulent accounts.  </p>
+
+          <p>
+          11. Service timing depends on worker availability.
+          </p>
+
+          <p>
+          12. Customer should verify service details before confirming booking.
+          </p>
+
+          <p>
+          13. By continuing, you agree platform policies and legal usage conditions.
+          </p>
+
+          </div>
+
+          <div className="flex gap-2 mt-4 items-start">
+         <input required type="checkbox" id="terms" className="mt-1" />
+          <label  htmlFor="terms"  className="text-xs text-gray-700"  >
+          I have read and accepted the Terms & Conditions.
+
+          </label>
+
+          </div>
+
+          </div>
               <button type="submit" className="w-full h-10 bg-primary text-primary-foreground font-mono text-xs uppercase tracking-widest hover:opacity-90 transition-opacity">
                 Confirm Booking
               </button>
@@ -226,6 +334,7 @@ const SearchPage = () => {
                         {!isLoggedIn && (
                           <span className="font-mono text-[10px] text-muted-foreground">Login as customer to book</span>
                         )}
+
                       </div>
 
                       <p className="font-mono text-[10px] text-muted-foreground mt-3 uppercase tracking-wider">

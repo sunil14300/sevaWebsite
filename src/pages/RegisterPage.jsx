@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
@@ -9,11 +9,207 @@ const OCCUPATIONS = [
   "Barber", "Sweeper", "Mason", "Driver", "Helper", "Cobbler", "Technical Person", "Labour", "Others",
 ];
 
+const SERVICE_CATEGORIES = [
+  {
+    category: "Hair & Personal Care",
+    icon: "💇",
+    services: [
+      {
+        name: "Barber",
+        description: "Professional hair cutting, shaving, and beard grooming services",
+        pricing: [
+          { service: "Trendy Hair Cutting", price: "₹100" },
+          { service: "Beard Grooming", price: "₹70" },
+          { service: "Hair Coloring", price: "₹150+" },
+          { service: "Facial", price: "₹100" }
+        ]
+      }
+    ]
+  },
+  {
+    category: "Cleaning & Maintenance",
+    icon: "🧹",
+    services: [
+      {
+        name: "Sweeper",
+        description: "Deep cleaning, office cleaning, and general house maintenance",
+        pricing: [
+          { service: "Deep Home Cleaning", price: "₹500-₹1500" },
+          { service: "Office Cleaning", price: "₹800-₹2000" },
+          { service: "Bathroom & Kitchen Cleaning", price: "₹400-₹800" },
+          { service: "New Home Cleaning (per sq ft)", price: "₹3-₹5" }
+        ]
+      },
+      {
+        name: "Mason",
+        description: "Tiles & marble fitting, wall repair, and brickwork & ball plastering",
+        pricing: [
+          { service: "Tiles & Marble Fitting (per sq ft)", price: "₹50-₹100" },
+          { service: "Wall Repair", price: "₹500-₹1200" },
+          { service: "Brickwork & Ball Plastering (per sq ft)", price: "₹40-₹80" }
+        ]
+      }
+    ]
+  },
+  {
+    category: "Technical & Installation",
+    icon: "🔧",
+    services: [
+      {
+        name: "Plumber",
+        description: "Pipe fitting, water tank installation, drainage services, and leak repairs",
+        pricing: [
+          { service: "Pipe Fitting & Tap Repair", price: "₹300-₹600" },
+          { service: "Water Tank & Sink Installation", price: "₹800-₹1500" },
+          { service: "Drainage Cleaning", price: "₹400-₹800" },
+          { service: "Leak Repair from Pipe/Tank", price: "₹300-₹700" },
+          { service: "Hourly Charge", price: "₹299 (Extra hour ₹99/hr)" }
+        ]
+      },
+      {
+        name: "Electrician",
+        description: "Electrical repairs, fan installation, switchboard & socket fixing",
+        pricing: [
+          { service: "Electrical Repair", price: "₹200-₹500" },
+          { service: "Fan & Copper Installation", price: "₹250-₹500" },
+          { service: "Switchboard & Socket Fixing", price: "₹300-₹600" }
+        ]
+      },
+      {
+        name: "Carpenter",
+        description: "Furniture repair, door & window repairs, and lock & key replacement",
+        pricing: [
+          { service: "Furniture Repair", price: "₹400-₹1200" },
+          { service: "Door, Window, Latch Repair", price: "₹500-₹1500" },
+          { service: "Lock & Key Replacement", price: "₹200-₹500" }
+        ]
+      }
+    ]
+  },
+  {
+    category: "Painting & Decoration",
+    icon: "🎨",
+    services: [
+      {
+        name: "Painter",
+        description: "Professional painting with attention to detail and quality finishes",
+        pricing: [
+          { service: "Interior Painting (per sq ft)", price: "₹20-₹40" },
+          { service: "Exterior Painting (per sq ft)", price: "₹25-₹50" },
+          { service: "Wall Texture/Design (per sq ft)", price: "₹30-₹60" }
+        ]
+      }
+    ]
+  },
+  {
+    category: "Automotive & Transportation",
+    icon: "🚗",
+    services: [
+      {
+        name: "Mechanic",
+        description: "Scooter/bike repair, tyre puncture & chain tightening services",
+        pricing: [
+          { service: "Scooter/Bike Repair", price: "₹300-₹800" },
+          { service: "Tyre Puncture Repair", price: "₹50-₹150" },
+          { service: "Chain Tightening", price: "₹100-₹200" }
+        ]
+      },
+      {
+        name: "Driver",
+        description: "Personal & commercial transportation with safe & reliable service",
+        pricing: [
+          { service: "Personal Commuting (per day)", price: "₹500-₹1000" },
+          { service: "Commercial Transport (per km)", price: "₹15-₹30" },
+          { service: "Long distance Transport", price: "₹20-₹40/km" }
+        ]
+      }
+    ]
+  },
+  {
+    category: "Culinary Services",
+    icon: "👨‍🍳",
+    services: [
+      {
+        name: "Cook",
+        description: "Non-veg and vegetarian cooking per person basis",
+        pricing: [
+          { service: "Non-Veg Cooking (per person)", price: "₹150-₹300" },
+          { service: "Vegetarian Cooking (per person)", price: "₹100-₹200" },
+          { service: "Special Events Catering (per person)", price: "₹200-₹400" }
+        ]
+      }
+    ]
+  },
+  {
+    category: "Additional Services",
+    icon: "⚙️",
+    services: [
+      {
+        name: "Helper",
+        description: "General assistance for household and commercial tasks",
+        pricing: [
+          { service: "Hourly Rate", price: "₹100-₹200" },
+          { service: "Daily Rate", price: "₹500-₹1000" }
+        ]
+      },
+      {
+        name: "Cobbler",
+        description: "Professional shoe repair and maintenance services",
+        pricing: [
+          { service: "Shoe Sole Repair", price: "₹100-₹300" },
+          { service: "Heel Replacement", price: "₹150-₹400" },
+          { service: "General Shoe Maintenance", price: "₹50-₹150" }
+        ]
+      },
+      {
+        name: "Technical Person",
+        description: "Technical support and troubleshooting services",
+        pricing: [
+          { service: "Hardware Support", price: "₹300-₹800" },
+          { service: "Software Support (hourly)", price: "₹200-₹500" },
+          { service: "Network Setup", price: "₹500-₹1500" }
+        ]
+      },
+      {
+        name: "Labour",
+        description: "General labor for construction, moving, and heavy work",
+        pricing: [
+          { service: "Daily Labor (per day)", price: "₹400-₹800" },
+          { service: "Hourly Labor (per hour)", price: "₹100-₹200" },
+          { service: "Heavy Lifting/Moving", price: "₹500-₹1200" }
+        ]
+      }
+    ]
+  }
+];
+
 const RegisterPage = () => {
-  const [role, setRole] = useState("customer");
+  const location = useLocation();
+  const initialRole = location.state?.registerAs || null;
+  const isRoleLocked = !!initialRole; // Lock role if it came from navbar confirmation
+  
+  // const [role, setRole] = useState(initialRole || "customer");
+ const [role, setRole] = useState("customer");
+
+  useEffect(() => {
+    if (initialRole) {
+      setRole(initialRole);
+    }
+  }, [initialRole]);
+
   const [formData, setFormData] = useState({
-    name: "", address: "", dob: "", mobile: "", email: "",
-    state: "", occupation: "", occupationOther: "", aadhaar: "", pan: "", priceCharge: "", password: "",
+    name: "",
+    address: "",
+    dob: "",
+    mobile: "",
+    email: "",
+    state: "",
+
+    occupation: "",
+    occupationOther: "",
+    aadhaar: "",
+    pan: "",
+    priceCharge: "",
   });
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
@@ -43,11 +239,6 @@ const RegisterPage = () => {
     return "";
   };
 
-  const validatePassword = (password) => {
-    if (!password) return "Password is required";
-    if (password.length < 6) return "Password must be at least 6 characters";
-    return "";
-  };
 
   const validateAadhaar = (aadhaar) => {
     if (!aadhaar) return "Aadhaar number is required";
@@ -55,6 +246,8 @@ const RegisterPage = () => {
     if (cleanAadhaar.length !== 12) return "Aadhaar number must be 12 digits";
     return "";
   };
+
+
 
   const validatePriceCharge = (price) => {
     if (!price) return "Price charge is required";
@@ -87,10 +280,7 @@ const RegisterPage = () => {
     } else if (name === "email") {
       setFormData({ ...formData, [name]: value });
       setErrors({ ...errors, [name]: validateEmail(value) });
-    } else if (name === "password") {
-      setFormData({ ...formData, [name]: value });
-      setErrors({ ...errors, [name]: validatePassword(value) });
-    } else if (name === "aadhaar") {
+    }  else if (name === "aadhaar") {
       const cleanedValue = value.replace(/\D/g, "").slice(0, 12);
       setFormData({ ...formData, [name]: cleanedValue });
       setErrors({ ...errors, [name]: validateAadhaar(cleanedValue) });
@@ -107,14 +297,14 @@ const RegisterPage = () => {
 
   const validateForm = () => {
     const newErrors = {};
-    
+
     newErrors.name = validateName(formData.name);
     newErrors.mobile = validateMobile(formData.mobile);
     newErrors.address = !formData.address ? "Address is required" : "";
     newErrors.dob = validateDOB(formData.dob);
     newErrors.state = !formData.state ? "State is required" : "";
     newErrors.email = validateEmail(formData.email);
-    newErrors.password = validatePassword(formData.password);
+
 
     if (role === "worker") {
       newErrors.occupation = !formData.occupation ? "Occupation is required" : "";
@@ -126,7 +316,7 @@ const RegisterPage = () => {
     }
 
     setErrors(newErrors);
-    return Object.values(newErrors).every(error => !error);
+    return Object.values(newErrors).every((error) => !error);
   };
 
   const handleSubmit = async (e) => {
@@ -192,6 +382,7 @@ const RegisterPage = () => {
     { name: "mobile", label: "Mobile Number", type: "tel", required: true },
     { name: "email", label: "E-mail (optional)", type: "email", required: false },
     { name: "state", label: "State", type: "text", required: true },
+
   ];
 
   const workerFields = [
@@ -203,146 +394,142 @@ const RegisterPage = () => {
   const fields = role === "worker" ? [...commonFields, ...workerFields] : commonFields;
 
   return (
-    <div className="pt-14">
-      <section className="container py-10">
-        <div className="max-w-lg mx-auto">
-          <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground mb-2">Join the platform</p>
-          <h1 className="text-3xl font-bold tracking-tight mb-6">Registration</h1>
+   <div className="pt-14 bg-muted/20 min-h-screen">
 
-          {/* Role Toggle */}
-          <div className="flex mb-8 border border-border">
-            <button
-              type="button"
-              onClick={() => setRole("customer")}
-              className={`flex-1 h-12 font-mono text-xs uppercase tracking-widest transition-all ${
-                role === "customer"
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-card text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              🏠 Customer
-            </button>
-            <button
-              type="button"
-              onClick={() => setRole("worker")}
-              className={`flex-1 h-12 font-mono text-xs uppercase tracking-widest transition-all ${
-                role === "worker"
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-card text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              🔧 Worker
-            </button>
-          </div>
+<section className="container py-10">
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {fields.map((field) => (
-              <div key={field.name}>
-                <label className="block font-mono text-xs uppercase tracking-widest text-muted-foreground mb-1">
-                  {field.label} {field.required && <span className="text-primary">*</span>}
-                </label>
-                <input
-                  name={field.name}
-                  type={field.type}
-                  required={field.required}
-                  value={formData[field.name]}
-                  onChange={handleChange}
-                  placeholder={field.name === "mobile" ? "Enter 10 digit number" : ""}
-                  className={`w-full h-11 px-4 bg-card border font-body text-sm focus:outline-none transition-colors ${
-                    errors[field.name] ? "border-red-500 focus:border-red-500" : "border-border focus:border-primary"
-                  }`}
-                />
-                {errors[field.name] && (
-                  <p className="text-red-500 text-xs mt-1 font-body">{errors[field.name]}</p>
-                )}
-              </div>
-            ))}
+<div className="mb-8">
+<p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">JOIN THE PLATFORM</p>
+<h1 className="text-4xl font-bold">Registration</h1>
 
-            {role === "worker" && (
-              <>
-                <div>
-                  <label className="block font-mono text-xs uppercase tracking-widest text-muted-foreground mb-1">
-                    Occupation <span className="text-primary">*</span>
-                  </label>
-                  <select
-                    name="occupation"
-                    required
-                    value={formData.occupation}
-                    onChange={handleChange}
-                    className={`w-full h-11 px-4 bg-card border font-body text-sm focus:outline-none transition-colors ${
-                      errors.occupation ? "border-red-500 focus:border-red-500" : "border-border focus:border-primary"
-                    }`}
-                  >
-                    <option value="">Select occupation</option>
-                    {OCCUPATIONS.map((o) => (
-                      <option key={o} value={o}>{o}</option>
-                    ))}
-                  </select>
-                  {errors.occupation && (
-                    <p className="text-red-500 text-xs mt-1 font-body">{errors.occupation}</p>
-                  )}
-                </div>
-                {formData.occupation === "Others" && (
-                  <div>
-                    <label className="block font-mono text-xs uppercase tracking-widest text-muted-foreground mb-1">
-                      Please specify your occupation <span className="text-primary">*</span>
-                    </label>
-                    <input
-                      name="occupationOther"
-                      type="text"
-                      required
-                      placeholder="Enter your occupation"
-                      value={formData.occupationOther}
-                      onChange={handleChange}
-                      className={`w-full h-11 px-4 bg-card border font-body text-sm focus:outline-none transition-colors ${
-                        errors.occupationOther ? "border-red-500 focus:border-red-500" : "border-border focus:border-primary"
-                      }`}
-                    />
-                    {errors.occupationOther && (
-                      <p className="text-red-500 text-xs mt-1 font-body">{errors.occupationOther}</p>
-                    )}
-                  </div>
-                )}
-              </>
-            )}
+</div>
 
-            <div>
-              <label className="block font-mono text-xs uppercase tracking-widest text-muted-foreground mb-1">
-                Password (min 6 chars) <span className="text-primary">*</span>
-              </label>
-              <input
-                name="password"
-                type="password"
-                required
-                value={formData.password}
-                onChange={handleChange}
-                className={`w-full h-11 px-4 bg-card border font-body text-sm focus:outline-none transition-colors ${
-                  errors.password ? "border-red-500 focus:border-red-500" : "border-border focus:border-primary"
-                }`}
-              />
-              {errors.password && (
-                <p className="text-red-500 text-xs mt-1 font-body">{errors.password}</p>
-              )}
-            </div>
 
-            <div className="pt-4">
-              <button
-                type="submit"
-                disabled={loading || Object.values(errors).some(error => error)}
-                className="w-full h-12 bg-primary text-primary-foreground font-mono text-xs uppercase tracking-widest hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loading ? "Registering..." : `Register as ${role === "customer" ? "Customer" : "Worker"}`}
-              </button>
-            </div>
+{!isRoleLocked && (
 
-            <p className="text-center font-body text-sm text-muted-foreground">
-              Already registered?{" "}
-              <Link to="/login" className="safety-link font-mono text-xs uppercase">Login</Link>
-            </p>
-          </form>
-        </div>
-      </section>
-    </div>
+<div className="flex mb-8 border rounded-lg overflow-hidden max-w-md">
+
+<button type="button" onClick={()=>setRole("customer")} className={`flex-1 p-4 font-semibold transition ${role==="customer" ? "bg-primary text-white": "bg-white"}`}>
+🏠 Customer
+</button>
+
+<button type="button" onClick={()=>setRole("worker")} className={`flex-1 p-4 font-semibold transition ${role==="worker" ? "bg-primary text-white": "bg-white"}`}>
+🔧 Worker
+
+</button>
+
+</div>
+
+)}
+
+{isRoleLocked && (
+<div className="mb-6 p-4 bg-orange-100 border rounded-lg">
+<p className="font-semibold">{role==="customer" ? "🏠 Registering as Customer": "🔧 Registering as Worker"}</p>
+</div>
+)}
+
+<div className="grid lg:grid-cols-5 gap-8">
+
+
+{/* LEFT SERVICE PANEL */}
+
+<div className="lg:col-span-2">
+<div className="bg-white rounded-xl border shadow-sm p-5 sticky top-20">
+<h2 className="font-bold text-xl mb-2 ">Service Pricing</h2>
+<p className="text-sm text-muted-foreground mb-5">Reference market pricing</p>
+
+<div className=" space-y-4 max-h-[650px] overflow-y-auto pr-2 ">
+{SERVICE_CATEGORIES.map((cat,index)=>(
+
+<div key={index} className=" border rounded-lg p-4 hover:shadow-md transition">
+
+<h3 className=" font-semibold text-primary mb-3">
+{cat.icon} {cat.category}
+</h3>
+
+
+{cat.services.map((service)=>(
+<div key={service.name} className="mb-3">
+
+<p className="font-medium mb-2">
+
+{service.name}
+
+</p>
+
+{service.pricing.slice(0,2).map((item)=>(
+<div key={item.service} className=" flex justify-between text-sm text-muted-foreground">
+<span>{item.service}</span>
+<span>{item.price}</span>
+</div>
+
+))}
+</div>
+))}
+</div>
+))}
+</div>
+
+</div>
+
+</div>
+
+
+{/* FORM PANEL */}
+
+<div className="lg:col-span-3">
+
+<div className="bg-white border rounded-xl shadow-sm p-8">
+
+<h2 className="text-2xl font-bold mb-6">Register as {" "}
+<span className="text-primary">
+{role}
+</span>
+</h2>
+
+<form onSubmit={handleSubmit} className=" grid md:grid-cols-2 gap-5">
+{fields.map((field)=>(
+<div key={field.name} className={ field.name==="address" ?"md:col-span-2":""}>
+
+<label className="block text-sm font-medium mb-2">
+{field.label}
+
+</label>
+
+<input name={field.name} type={field.type} required={field.required} value={formData[field.name]}onChange={handleChange} placeholder={ field.name==="mobile" ?"Enter Mobile Number":""}
+
+className=" w-full h-12 px-4 rounded-lg border focus:ring-2 focus:ring-orange-400 outline-none"/>{errors[field.name]&&(
+<p className=" text-red-500 text-xs mt-1">{errors[field.name]}</p>
+)}
+
+</div>
+
+))}
+
+{role==="worker"&&(
+<div className="md:col-span-2">
+<label className="block mb-2 font-medium">Occupation</label>
+<select name="occupation" value={formData.occupation} onChange={handleChange} className=" w-full h-12 border rounded-lg px-4">
+
+<option value="">Select Occupation</option>{OCCUPATIONS.map((o)=>(<option key={o} value={o} >{o}</option>))}
+</select>
+</div>
+)}
+
+
+<div className="md:col-span-2">
+<button type="submit" disabled={loading} className=" w-full h-12 bg-primary text-white rounded-lg font-semibold hover:opacity-90 transition">
+
+{loading ?"Registering...":`Register as ${role}`}
+</button>
+</div>
+</form>
+</div>
+</div>
+</div>
+</section>
+
+</div>
   );
 };
 

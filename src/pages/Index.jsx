@@ -20,8 +20,8 @@ const SERVICE_CATEGORIES = [
 const STATS = [
   { value: "500+", label: "Workers" },
   { value: "12", label: "Categories" },
-  { value: "7%", label: "Commission" },
-  { value: "48hr", label: "Payment cycle" },
+  // { value: "7%", label: "Commission" },
+  // { value: "48hr", label: "Payment cycle" },
 ];
 
 const Index = () => {
@@ -80,7 +80,7 @@ const Index = () => {
       {/* Stats */}
       <section className="workshop-panel">
         <div className="container">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-2 gap-8">
             {STATS.map((stat, idx) => (
               <div key={stat.label} className="text-center animate-fade-in" style={{animationDelay: `${0.4 + idx * 0.1}s`}}>
                 <div className="font-mono text-3xl font-bold text-secondary-foreground mb-1 hover:text-primary transition-colors duration-300">
@@ -101,9 +101,7 @@ const Index = () => {
           <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground mb-2">
             Browse by
           </p>
-          <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
-            Service Categories
-          </h2>
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight">  Service Categories</h2>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 grid-base">
@@ -112,8 +110,8 @@ const Index = () => {
               key={cat.name}
               onClick={() => handleCategoryClick(cat.name)}
               className="category-card group animate-fade-in hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
-              style={{animationDelay: `${0.6 + idx * 0.05}s`}}
-            >
+              style={{animationDelay: `${0.6 + idx * 0.05}s`}} >
+                
               <div className="text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
                 {cat.icon}
               </div>
