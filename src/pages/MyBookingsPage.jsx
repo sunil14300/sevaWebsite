@@ -138,10 +138,7 @@ const MyBookingsPage = () => {
                     <p className="font-mono text-[10px] text-muted-foreground uppercase">Date</p>
                     <p className="font-body">{new Date(b.serviceDate).toLocaleDateString()}</p>
                   </div>
-                  {/* <div>
-                    <p className="font-mono text-[10px] text-muted-foreground uppercase">Price</p>
-                    <p className="font-body font-bold">₹{b.agreedPrice}</p>
-                  </div> */}
+                  
                   <div>
                     <p className="font-mono text-[10px] text-muted-foreground uppercase">Address</p>
                     <p className="font-body">{b.customerAddress}</p>

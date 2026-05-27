@@ -31,7 +31,7 @@ router.post(
       if (!worker) return res.status(404).json({ error: "Worker not found." });
       if (!worker.available) return res.status(400).json({ error: "Worker is not available." });
 
-      // const commission = parseFloat(req.body.agreedPrice) * COMMISSION_RATE;
+      
       const commission = 0; // free for now
 
       const booking = await Booking.create({
@@ -42,7 +42,7 @@ router.post(
         customerAddress: req.body.customerAddress,
         serviceDate: req.body.serviceDate,
         description: req.body.description,
-        // agreedPrice: req.body.agreedPrice,
+        
         commission,
       });
 
@@ -108,8 +108,7 @@ router.patch("/:id/status", auth, async (req, res) => {
 booked you for
 ${new Date(req.body.serviceDate).toLocaleDateString()}.
 Address:
-${req.body.customerAddress}.
-Price: ₹${req.body.agreedPrice}`,
+${req.body.customerAddress}.`,
         bookingId: booking._id,
       });
     } else if (req.body.status === "cancelled") {

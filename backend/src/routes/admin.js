@@ -148,28 +148,76 @@ router.delete("/bookings/:id", auth, adminOnly, async (req, res) => {
 });
 
 // GET /api/admin/stats
-router.get("/stats", auth, adminOnly, async (req, res) => {
-  try {
-    const [totalWorkers, totalCustomers, totalBookings, pendingVerifications, revenueData] = await Promise.all([
-      Worker.countDocuments({ role: "worker" }),
-      Customer.countDocuments(),
-      Booking.countDocuments(),
-      Worker.countDocuments({ verified: false }),
-      Booking.aggregate([
-        { $group: {
-          _id: null,
-          totalRevenue: { $sum: "$agreedPrice" },
-          totalCommission: { $sum: "$commission" },
-          completedRevenue: { $sum: { $cond: [{ $eq: ["$status", "completed"] }, "$agreedPrice", 0] } },
-          completedCommission: { $sum: { $cond: [{ $eq: ["$status", "completed"] }, "$commission", 0] } },
-        }}
-      ]),
-    ]);
-    const revenue = revenueData[0] || { totalRevenue: 0, totalCommission: 0, completedRevenue: 0, completedCommission: 0 };
-    res.json({ totalWorkers, totalCustomers, totalBookings, pendingVerifications, ...revenue });
-  } catch {
-    res.status(500).json({ error: "Server error." });
-  }
+router.get(
+"/stats",
+auth,
+adminOnly,
+async(req,res)=>{
+
+try{
+
+const [
+
+totalWorkers,
+totalCustomers,
+totalBookings,
+pendingVerifications
+
+]=await Promise.all([
+
+Worker.countDocuments({
+
+role:"worker"
+
+}),
+
+Customer.countDocuments(),
+
+Booking.countDocuments(),
+
+Worker.countDocuments({
+
+verified:false
+
+})
+
+]);
+
+res.json({
+
+totalWorkers,
+
+totalCustomers,
+
+totalBookings,
+
+pendingVerifications,
+
+totalRevenue:0,
+
+totalCommission:0,
+
+completedRevenue:0,
+
+completedCommission:0
+
+});
+
+}catch(err){
+
+console.log(err);
+
+res
+.status(500)
+.json({
+
+error:
+"Server error."
+
+});
+
+}
+
 });
 
 module.exports = router;

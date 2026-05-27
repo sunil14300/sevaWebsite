@@ -9,8 +9,8 @@ const bookingSchema = new mongoose.Schema(
     customerAddress: { type: String, required: true },
     serviceDate: { type: Date, required: true },
     description: { type: String },
-    // agreedPrice: { type: Number, required: true },
-    commission: { type: Number, required: true }, // 7% of agreedPrice
+    
+    commission: { type: Number, required: true }, 
     status: {
       type: String,
       enum: ["pending", "confirmed", "in_progress", "completed", "cancelled"],

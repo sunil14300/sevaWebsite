@@ -15,11 +15,13 @@ const SERVICE_CATEGORIES = [
   { name: "Driver", icon: "🚗", description: "Personal & commercial driving" },
   { name: "Helper", icon: "🤝", description: "General labour assistance" },
   { name: "Cobbler", icon: "👞", description: "Shoe repair & maintenance" },
+  { name: "Technical Person", icon: "💻", description: "Appliance repair & IT support" },
+  {name:"beautyparalour", icon:"💄", description:"Beauty services at home"},
 ];
 
 const STATS = [
   { value: "500+", label: "Workers" },
-  { value: "12", label: "Categories" },
+  { value: "14", label: "Categories" },
   // { value: "7%", label: "Commission" },
   // { value: "48hr", label: "Payment cycle" },
 ];

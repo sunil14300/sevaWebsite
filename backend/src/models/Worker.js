@@ -16,13 +16,27 @@ const workerSchema = new mongoose.Schema(
       required: true,
     },
     verified: { type: Boolean, default: false },
+
+loginOTP: {
+ type: String,
+ default: "",
+},
+
+otpExpiry: {
+ type: Date,
+ default: null,
+},
+
+lastAdminLogin: {
+ type: Date,
+},
     // Worker-only fields
     occupation: {
       type: String,
       enum: [
         "Plumber", "Electrician", "Painter", "Mechanic", "Cook",
         "Carpenter", "Barber", "Sweeper", "Mason", "Driver",
-        "Helper", "Cobbler", "Technical Person", "Labour", "Others",
+        "Helper", "Cobbler", "Technical Person", "Labour","Beauty Parlour", "Others",
       ],
       required: function () { return this.role === "worker"; },
     },

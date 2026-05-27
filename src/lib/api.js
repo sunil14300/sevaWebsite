@@ -97,4 +97,33 @@ export const api = {
   adminGetStats() {
     return this.request("/admin/stats");
   },
+
+  verifyAdminOTP(
+registrationId,
+otp
+){
+
+return this.request(
+
+"/auth/verify-admin",
+
+{
+
+method:"POST",
+
+body:
+JSON.stringify({
+
+registrationId,
+
+otp
+
+})
+
+}
+
+);
+
+}
+
 };

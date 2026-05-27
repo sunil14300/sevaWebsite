@@ -401,10 +401,10 @@ const AdminPage = () => {
                             <p className="font-mono text-[10px] text-muted-foreground uppercase">Date</p>
                             <p className="font-body">{new Date(b.serviceDate).toLocaleDateString()}</p>
                           </div>
-                          <div>
+                          {/* <div>
                             <p className="font-mono text-[10px] text-muted-foreground uppercase">Price</p>
                             <p className="font-body font-bold">₹{b.agreedPrice}</p>
-                          </div>
+                          </div> */}
                           <div>
                             <p className="font-mono text-[10px] text-muted-foreground uppercase">Commission</p>
                             <p className="font-body">₹{b.commission?.toFixed(2)}</p>

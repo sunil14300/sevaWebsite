@@ -6,7 +6,7 @@ import { toast } from "sonner";
 
 const OCCUPATIONS = [
   "Plumber", "Electrician", "Painter", "Mechanic", "Cook", "Carpenter",
-  "Barber", "Sweeper", "Mason", "Driver", "Helper", "Cobbler", "Technical Person", "Labour", "Others",
+  "Barber", "Sweeper", "Mason", "Driver", "Helper", "Cobbler", "Technical Person", "Labour","Beauty Parlour", "Others",
 ];
 
 const SERVICE_CATEGORIES = [
@@ -170,6 +170,16 @@ const SERVICE_CATEGORIES = [
           { service: "Network Setup", price: "₹500-₹1500" }
         ]
       },
+      {
+        name: "Beauty Parlour",
+        description: "Beauty services at home including makeup, skincare, and grooming",
+        pricing: [
+          { service: "Makeup Services", price: "₹500-₹2000" },
+          { service: "Skincare Treatments", price: "₹300-₹1000" },
+          { service: "Grooming Services", price: "₹200-₹800" }
+        ]
+      },
+
       {
         name: "Labour",
         description: "General labor for construction, moving, and heavy work",

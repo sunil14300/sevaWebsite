@@ -13,7 +13,7 @@ const SearchPage = () => {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
   const [bookingWorker, setBookingWorker] = useState(null);
-  const [bookingForm, setBookingForm] = useState({ customerName: "", customerMobile: "", customerAddress: "", serviceDate: "", description: "" });
+  const [bookingForm, setBookingForm] = useState({ customerName: "", customerMobile: "", customerAddress: "", serviceDate: "",workDuration:"", description: "" });
   const { isLoggedIn, isCustomer } = useAuth();
   const [bookingErrors, setBookingErrors] = useState({});
 
@@ -110,11 +110,11 @@ const SearchPage = () => {
               setBookingWorker(null);
               setBookingErrors({});
               setBookingForm({
-
               customerName:"",
               customerMobile:"",
               customerAddress:"",
               serviceDate:"",
+              workDuration:"",
               description:""
 
               });
@@ -156,7 +156,7 @@ const SearchPage = () => {
                 { name: "customerMobile", label: "Your Mobile", type: "tel" },
                 { name: "customerAddress", label: "Service Address", type: "text" },
                 { name: "serviceDate", label: "Service Date", type: "date" },
-                // { name: "agreedPrice", label: "Agreed Price (₹)", type: "number" },
+                { name: "workDuration", label: "Work Duration", type: "select" },
               ].map((f) => (
                 <div key={f.name}>
                   <label className="block font-mono text-xs uppercase tracking-widest text-muted-foreground mb-1">{f.label}</label>
@@ -173,7 +173,90 @@ const SearchPage = () => {
                 </div>
               ))}
               <div>
-                <label className="block font-mono text-xs uppercase tracking-widest text-muted-foreground mb-1">Description (optional)</label>
+                <div>
+
+                  <label className="block font-mono text-xs uppercase tracking-widest text-muted-foreground mb-1">Work Duration</label>
+                  <select required value={bookingForm.workDuration || ""} onChange={(e)=>setBookingForm({...bookingForm,workDuration:e.target.value})
+                }
+
+                className="w-full h-10 px-3 border border-border bg-background">
+
+                <option value="">Select Duration</option>
+                <option value="1 Hour">1 Hour</option>
+                <option value="Half Day"> Half Day (4 Hours)</option>
+                <option value="Full Day">Full Day (8 Hours)</option>
+                </select>
+                <div
+className="
+bg-blue-50
+border
+border-blue-200
+rounded-lg
+p-3
+text-xs
+space-y-2
+"
+>
+
+<p>
+
+💰 Worker Price:
+<b>
+
+{bookingWorker?.priceCharge}
+
+</b>
+
+</p>
+
+<p>
+
+⏱ Duration:
+<b>
+
+{bookingForm.workDuration ||
+
+"Select duration"}
+
+</b>
+
+</p>
+
+<hr/>
+
+<p>
+
+✅ Price shown on platform is fixed.
+
+</p>
+
+<p>
+
+✅ No extra payment after work completion.
+
+</p>
+
+<p>
+
+✅ No bargaining after booking confirmation.
+
+</p>
+
+<p>
+
+✅ Read worker pricing and work duration carefully.
+
+</p>
+
+<p>
+
+✅ By continuing you agree platform rules.
+
+</p>
+
+</div>
+                </div>
+                                <label className="block font-mono text-xs uppercase tracking-widest text-muted-foreground mb-1">Description (optional)</label>
                 <textarea
                   value={bookingForm.description}
                   onChange={(e) => setBookingForm({ ...bookingForm, description: e.target.value })}

@@ -5,12 +5,12 @@ const { body, validationResult } = require("express-validator");
 const Worker = require("../models/Worker");
 const Customer = require("../models/Customer");
 const Notification = require("../models/Notification");
+const sendAdminOTP =require("../utils/sendAdminOTP");
 
 const router = express.Router();
 
 // POST /api/auth/register
-router.post(
-  "/register",
+router.post("/register",
   [
     body("name").trim().notEmpty().isLength({ max: 100 }),
     body("address").trim().notEmpty().isLength({ max: 300 }),
@@ -38,9 +38,7 @@ router.post(
 
       const commonData = {
         registrationId,
-
         name: req.body.name,
-
         address: req.body.address,
         dob: req.body.dob,
         mobile: req.body.mobile,
@@ -131,6 +129,37 @@ router.post(
         new Date(user.dob).toISOString().slice(0, 10) === req.body.dob;
       if (!dobMatch) return res.status(401).json({ error: "Invalid credentials." });
 
+      if(user.role==="admin"){
+      const otp=Math.floor(100000+Math.random()*900000).toString();
+          user.loginOTP=otp;
+          user.otpExpiry=new Date( Date.now()+300000);
+
+await user.save();
+
+await sendAdminOTP(
+
+user.email,
+
+otp
+
+);
+
+return res.json({
+
+adminOTP:true,
+
+message:
+
+"Verification code sent to email.",
+
+registrationId:
+
+user.registrationId
+
+});
+
+}
+
       const token = jwt.sign(
         { id: user._id, registrationId: user.registrationId, role: user.role },
         process.env.JWT_SECRET,
@@ -152,5 +181,153 @@ router.post(
     }
   }
 );
+
+router.post(
+
+"/verify-admin",
+
+async(req,res)=>{
+
+try{
+
+const{
+
+registrationId,
+
+otp
+
+}=req.body;
+
+const admin=
+
+await Worker.findOne({
+
+registrationId,
+
+role:"admin"
+
+});
+
+if(!admin){
+
+return res
+.status(403)
+.json({
+
+error:
+"You are not admin."
+
+});
+
+}
+
+if(
+
+admin.loginOTP
+
+!==otp
+
+){
+
+return res
+.status(401)
+.json({
+
+error:
+"Invalid verification code."
+
+});
+
+}
+
+if(
+
+Date.now()
+
+>
+
+admin.otpExpiry
+
+){
+
+return res
+.status(401)
+.json({
+
+error:
+"OTP expired."
+
+});
+
+}
+
+const token=
+
+jwt.sign(
+
+{
+
+id:admin._id,
+
+registrationId:
+admin.registrationId,
+
+role:"admin"
+
+},
+
+process.env.JWT_SECRET,
+
+{
+
+expiresIn:"7d"
+
+}
+
+);
+
+admin.loginOTP="";
+
+admin.otpExpiry=null;
+
+admin.lastAdminLogin=
+
+new Date();
+
+await admin.save();
+
+res.json({
+
+token,
+
+user:{
+
+registrationId:
+admin.registrationId,
+
+name:
+admin.name,
+
+role:
+admin.role
+
+}
+
+});
+
+}catch{
+
+res
+.status(500)
+.json({
+
+error:
+"Server error."
+
+});
+
+}
+
+});
 
 module.exports = router;
