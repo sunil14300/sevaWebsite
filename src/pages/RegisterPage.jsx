@@ -195,17 +195,24 @@ const SERVICE_CATEGORIES = [
 
 const RegisterPage = () => {
   const location = useLocation();
-  const initialRole = location.state?.registerAs || null;
-  const isRoleLocked = !!initialRole; // Lock role if it came from navbar confirmation
+   const navigate = useNavigate();
+const initialRole = location.state?.registerAs || "customer";
+  // const isRoleLocked = !!initialRole; // Lock role if it came from navbar confirmation
   
   // const [role, setRole] = useState(initialRole || "customer");
- const [role, setRole] = useState("customer");
+ const [role, setRole] = useState(initialRole);
 
-  useEffect(() => {
-    if (initialRole) {
-      setRole(initialRole);
-    }
-  }, [initialRole]);
+useEffect(()=>{
+
+if(location.state?.registerAs){
+
+setRole(
+location.state.registerAs
+);
+
+}
+
+},[location]);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -226,7 +233,7 @@ const RegisterPage = () => {
   const [regId, setRegId] = useState("");
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
-  const navigate = useNavigate();
+ 
 
   // Validation functions
   const validateName = (name) => {
@@ -411,32 +418,16 @@ const RegisterPage = () => {
 <div className="mb-8">
 <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">JOIN THE PLATFORM</p>
 <h1 className="text-4xl font-bold">Registration</h1>
+<p className="mt-2 text-sm text-muted-foreground font-medium">
 
+You are registering as{" "}
+
+<span className="text-primary font-semibold capitalize ">
+{role}
+</span>
+
+</p>
 </div>
-
-
-{!isRoleLocked && (
-
-<div className="flex mb-8 border rounded-lg overflow-hidden max-w-md">
-
-<button type="button" onClick={()=>setRole("customer")} className={`flex-1 p-4 font-semibold transition ${role==="customer" ? "bg-primary text-white": "bg-white"}`}>
-🏠 Customer
-</button>
-
-<button type="button" onClick={()=>setRole("worker")} className={`flex-1 p-4 font-semibold transition ${role==="worker" ? "bg-primary text-white": "bg-white"}`}>
-🔧 Worker
-
-</button>
-
-</div>
-
-)}
-
-{isRoleLocked && (
-<div className="mb-6 p-4 bg-orange-100 border rounded-lg">
-<p className="font-semibold">{role==="customer" ? "🏠 Registering as Customer": "🔧 Registering as Worker"}</p>
-</div>
-)}
 
 <div className="grid lg:grid-cols-5 gap-8">
 

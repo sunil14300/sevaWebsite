@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">sevaWebsite</string>
+    <string name="title_activity_main">sevaWebsite</string>
+    <string name="package_name">com.seva.website</string>
+    <string name="custom_url_scheme">com.seva.website</string>
+</resources>

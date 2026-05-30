@@ -3,6 +3,8 @@ import { useAuth } from "@/context/AuthContext";
 import { useState } from "react";
 import { Menu, X, Briefcase } from "lucide-react";
 import NotificationBell from "@/components/NotificationBell";
+// import {useLocation} from "react-router-dom";
+
 import {
   Dialog,
   DialogContent,
@@ -23,6 +25,7 @@ const Navbar = () => {
   const [confirmationOpen, setConfirmationOpen] = useState(false);
   const [selectedRole, setSelectedRole] = useState(null);
   const [confirmed, setConfirmed] = useState(false);
+  
 
   const handleLogout = () => {
     logout();
@@ -50,6 +53,7 @@ const Navbar = () => {
       setConfirmed(false);
     }
   };
+
 
   const handleCancel = () => {
     setConfirmationOpen(false);
@@ -81,11 +85,14 @@ const Navbar = () => {
     }
   }
 
+  
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background border-b border-border">
       <div className="container flex items-center justify-between h-14">
         <Link to="/" className="font-mono text-lg font-bold tracking-tight safety-link">
-          SEVA<span className="text-primary">.</span>WEBSITE
+          {/* SEVA<span className="text-primary">.</span>WEBSITE */}
+          <img src="/logo.png" alt="SEVA Logo" className="h-16 w-30" />
         </Link>
 
         {/* Desktop nav */}

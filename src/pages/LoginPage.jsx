@@ -1,8 +1,19 @@
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import { Link,useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
+
 
 const LoginPage=()=>{
 const[regId,setRegId]=useState("");
@@ -11,6 +22,8 @@ const[showOTP,setShowOTP]=useState(false);
 const[otp,setOtp]=useState("");
 const[tempRegistrationId,setTempRegistrationId]=useState("");
 const[loading,setLoading]=useState(false);
+const[roleSelectionOpen,setRoleSelectionOpen]=useState(false);
+const[selectedRole,setSelectedRole]=useState(null);
 const{login}=useAuth();
 const navigate=useNavigate();
 const handleSubmit=async(e)=>{e.preventDefault();
@@ -73,6 +86,8 @@ return;
 navigate("/search");
 };
 
+
+
 return(
 
 <div className="pt-14 min-h-screen flex items-center justify-center">
@@ -113,9 +128,61 @@ return(
 }
 </div>
 
-<p className=" text-center text-sm">Not registered?
-<Link to="/register">Register</Link>
-</p>
+<div className="mt-4">
+<p className="text-center text-sm">Not registered?</p>
+
+<button
+  type="button"
+  onClick={() => setRoleSelectionOpen(true)}
+  className="mt-2 w-full h-10 border border-border rounded-lg text-primary font-semibold hover:bg-primary/10 transition"
+>
+  Register
+</button>
+</div>
+
+{/* Role Selection Modal */}
+<Dialog open={roleSelectionOpen} onOpenChange={setRoleSelectionOpen}>
+  <DialogContent className="sm:max-w-md">
+    <DialogHeader>
+      <DialogTitle className="font-mono text-lg uppercase tracking-widest">
+        Choose Registration Type
+      </DialogTitle>
+      <DialogDescription className="font-body">
+        Select the type of account you want to create
+      </DialogDescription>
+    </DialogHeader>
+
+    <div className="grid grid-cols-2 gap-4 py-6">
+      <button
+        type="button"
+        onClick={() => {
+          setSelectedRole("customer");
+          setRoleSelectionOpen(false);
+          navigate("/register", { state: { registerAs: "customer" } });
+        }}
+        className="p-4 border-2 border-border hover:border-primary hover:bg-primary/10 rounded transition-all text-center"
+      >
+        <div className="text-2xl mb-2">🏠</div>
+        <p className="font-mono text-sm uppercase tracking-widest font-semibold">Customer</p>
+        <p className="font-body text-xs text-muted-foreground mt-1">Book services</p>
+      </button>
+
+      <button
+        type="button"
+        onClick={() => {
+          setSelectedRole("worker");
+          setRoleSelectionOpen(false);
+          navigate("/register", { state: { registerAs: "worker" } });
+        }}
+        className="p-4 border-2 border-border hover:border-primary hover:bg-primary/10 rounded transition-all text-center"
+      >
+        <div className="text-2xl mb-2">🔧</div>
+        <p className="font-mono text-sm uppercase tracking-widest font-semibold">Worker</p>
+        <p className="font-body text-xs text-muted-foreground mt-1">Offer services</p>
+      </button>
+    </div>
+  </DialogContent>
+</Dialog>
 </form>
 </div>
 </div>
